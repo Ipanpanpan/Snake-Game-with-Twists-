@@ -1,4 +1,4 @@
-name: Snake-game-with-twists-
+  name: Snake-game-with-twists-
 channels:
   - conda-forge
   - defaults
