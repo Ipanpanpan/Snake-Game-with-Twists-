@@ -1,6 +1,8 @@
 import pygame
 import time
 import random
+from snake import Snake
+
 
 # Initialize pygame
 pygame.init()
@@ -42,9 +44,12 @@ def score_display(score):
 
 def game_loop():
     # Initial snake setup
-    snake_pos = [100, 50]
-    snake_body = [[100, 50], [90, 50], [80, 50]]
-    direction = 'RIGHT'
+
+    Snake.set_block_size(block_size)
+
+    s1 = Snake([[100, 50], [50, 50]])
+
+    direction = s1.get_direction()
     change_to = direction
 
     # Initial food position
@@ -57,52 +62,62 @@ def game_loop():
 
     running = True
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP and direction != 'DOWN':
-                    change_to = 'UP'
-                elif event.key == pygame.K_DOWN and direction != 'UP':
-                    change_to = 'DOWN'
-                elif event.key == pygame.K_LEFT and direction != 'RIGHT':
-                    change_to = 'LEFT'
-                elif event.key == pygame.K_RIGHT and direction != 'LEFT':
-                    change_to = 'RIGHT'
 
         # Change direction
-        direction = change_to
-        if direction == 'UP':
-            snake_pos[1] -= block_size
-        if direction == 'DOWN':
-            snake_pos[1] += block_size
-        if direction == 'LEFT':
-            snake_pos[0] -= block_size
-        if direction == 'RIGHT':
-            snake_pos[0] += block_size
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    change_to = 'UP'
+                elif event.key == pygame.K_DOWN:
+                    change_to = 'DOWN'
+                elif event.key == pygame.K_LEFT:
+                    change_to = 'LEFT'
+                elif event.key == pygame.K_RIGHT:
+                    change_to = 'RIGHT'
+        s1.set_direction(change_to)
+        s1.update()
 
-        # Growing snake on eating food
-        snake_body.insert(0, list(snake_pos))
-        if snake_pos == food_pos:
+        #Edge of screen handling
+        new_pos = s1.get_head_position()
+        if (s1.get_head_position()[0] < 0):
+            new_pos[0] = width
+            s1.set_head_positions(new_pos)
+            
+        elif s1.get_head_position()[0] >= width:
+            new_pos[0] = 0
+            s1.set_head_positions(new_pos)
+            
+        elif s1.get_head_position()[1] < 0:
+            new_pos[1] = height
+            s1.set_head_positions(new_pos)
+
+        elif s1.get_head_position()[1] >= height:
+            new_pos[1] = 0
+            s1.set_head_positions(new_pos)
+
+
+        #Eat fruit
+        if s1.get_head_position() == food_pos:
+            s1.eat(1)
             score += 10
             food_spawn = False
-        else:
-            snake_body.pop()
 
+
+        #Spawn Food
         if not food_spawn:
             food_pos = [random.randrange(1, (width // block_size)) * block_size,
                         random.randrange(1, (height // block_size)) * block_size]
         food_spawn = True
 
+        
         # Game over conditions
-        if (snake_pos[0] < 0 or snake_pos[0] >= width or
-            snake_pos[1] < 0 or snake_pos[1] >= height):
+        if not s1.is_alive():
             running = False
-        for block in snake_body[1:]:
-            if snake_pos == block:
-                running = False
+
 
         # Update screen
         screen.fill(black)
-        for block in snake_body:
+        for block in s1.get_body_segments():
             pygame.draw.rect(screen, green, pygame.Rect(block[0], block[1], block_size, block_size))
         pygame.draw.rect(screen, red, pygame.Rect(food_pos[0], food_pos[1], block_size, block_size))
         score_display(score)
@@ -110,6 +125,7 @@ def game_loop():
 
         # Control speed
         clock.tick(snake_speed)
+
 
     # Game over message
     screen.fill(black)
