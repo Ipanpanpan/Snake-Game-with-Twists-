@@ -1,4 +1,6 @@
+import pygame
 from typing import List
+from powerup_debuff import PowerUpOrDebuff
 
 class Snake:
     __block_size = None
@@ -32,6 +34,9 @@ class Snake:
 
         self.__food_stock = 30
         self.__is_alive = True
+        self.__is_frozen = False  # Initialize the frozen state to False
+        self.__freeze_end_time = None  # Initialize the freeze end time to None
+        self.__is_speed_boosted = False  # Make sure speed boost is initialized
         
 
     def __init_body_segments(self, positions):
@@ -100,9 +105,51 @@ class Snake:
 
     def eat(self, amount):
         self.__food_stock += amount
+    
+    def apply_freeze(self, duration: int):
+        """Freeze the snake for a specified duration."""
+        self.__is_frozen = True
+        self.__freeze_end_time = pygame.time.get_ticks() + duration
+
+    def remove_freeze(self):
+        """Remove the freeze effect after the duration expires."""
+        self.__is_frozen = False
+        self.__freeze_end_time = None
+
+    def apply_speed_boost(self, duration: int):
+        """Apply a speed boost to the snake for a specified duration."""
+        self.__is_speed_boosted = True
+        self.__speed_boost_end_time = pygame.time.get_ticks() + duration
+
+    def remove_speed_boost(self):
+        """Remove the speed boost after the duration expires."""
+        self.__is_speed_boosted = False
+        self.__speed_boost_end_time = None
+
+    def get_active_effects(self):
+        active_effects = []
+    
+        if getattr(self, "__is_frozen", False):
+            active_effects.append("freeze")
+    
+        if getattr(self, "__is_speed_boosted", False):
+            active_effects.append("speed_boost")
+    
+        return active_effects
+
 
     def update(self):
         assert id(self.__head_position) != id(self.__body_segments[0])
+
+        if self.__is_frozen and pygame.time.get_ticks() > self.__freeze_end_time:
+            self.remove_freeze()  # Unfreeze after the duration ends
+        
+        if self.__is_frozen:
+            return  # If frozen, don't update the snake's position
+
+        if self.__is_speed_boosted and pygame.time.get_ticks() > self.__speed_boost_end_time:
+            self.remove_speed_boost()  # End speed boost after the duration expires
+
 
         if self.__direction == 'UP':
             self.__head_position[1] -= Snake.__block_size
@@ -112,17 +159,24 @@ class Snake:
             self.__head_position[0] -= Snake.__block_size
         if self.__direction == 'RIGHT':
             self.__head_position[0] += Snake.__block_size
-        
+
+        # Insert the new head position at the front
         self.__body_segments.insert(0, self.get_head_position())
         
+        # If the snake eats food, increase the food stock and add a body segment
         if self.__food_stock:
             self.__food_stock -= 1
         else: 
+            # Remove the last body segment if no food is eaten (tail moves)
             self.__body_segments.pop()
         
         if self.__head_position in self.__body_segments[1:]:
             self.kill()
 
+    def add_body_segment(self):
+        """Add a new segment to the snake's body."""
+        # Append a new body segment at the position of the last segment
+        self.__body_segments.append(self.__body_segments[-1].copy())
 
 def main():
     x = [1,2,3]
