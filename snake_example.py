@@ -3,7 +3,7 @@ import time
 import random
 from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
-
+from game import Game
 # Initialize pygame
 pygame.init()
 
@@ -47,107 +47,51 @@ def score_display(score):
     value = score_font.render(f"Score: {score}", True, green)
     screen.blit(value, [10, 10])
 
-def game_loop():
-    # Initial snake setup
-    running = True
-    Snake.set_block_size(block_size)
-    s1 = Snake([[100, 50], [50, 50]])
-
-    direction = s1.get_direction()
-    change_to = direction
-
-    # Initial food position
-    food_pos = get_random_position()
-    food_spawn = True
-
-    # Initial score
-    score = 0
-
-    # Spawn random power-up or debuff (includes freeze debuff)
-    powerup = PowerUpOrDebuff.spawn()
-
-    running = True
-    while running:
-        # Event handling (moving snake, quitting the game, etc.)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    change_to = 'UP'
-                elif event.key == pygame.K_DOWN:
-                    change_to = 'DOWN'
-                elif event.key == pygame.K_LEFT:
-                    change_to = 'LEFT'
-                elif event.key == pygame.K_RIGHT:
-                    change_to = 'RIGHT'
-        
-        s1.set_direction(change_to)
-        s1.update()  # Update snake position (handle freeze here)
-
-        # Check for collision with power-up or debuff
-        if s1.get_head_position() == powerup.position:
-            powerup.apply_effect(s1)  # Apply the freeze or speed boost effect
-            score += 10  # Award points for picking up the item
-            powerup = PowerUpOrDebuff.spawn()  # Spawn a new power-up/debuff
-
-        # Edge of screen handling (wrap around)
-        if s1.get_head_position()[0] < 0:
-            s1.set_head_positions([width - block_size, s1.get_head_position()[1]])
-        elif s1.get_head_position()[0] >= width:
-            s1.set_head_positions([0, s1.get_head_position()[1]])
-        elif s1.get_head_position()[1] < 0:
-            s1.set_head_positions([s1.get_head_position()[0], height - block_size])
-        elif s1.get_head_position()[1] >= height:
-            s1.set_head_positions([s1.get_head_position()[0], 0])
-
-        # Eat food
-        if s1.get_head_position() == food_pos:
-            s1.eat(1)
-            s1.add_body_segment()  # Add a new segment to the body
-            score += 10
-            food_spawn = False
-
-        # Spawn new food
-        if not food_spawn:
-            food_pos = get_random_position()
-        food_spawn = True
-
-        # Update screen
-        screen.fill(black)
-        for block in s1.get_body_segments():
-            pygame.draw.rect(screen, green, pygame.Rect(block[0], block[1], block_size, block_size))
-        pygame.draw.rect(screen, red, pygame.Rect(food_pos[0], food_pos[1], block_size, block_size))
-
-        # Draw the power-up or debuff
-        if powerup.item_type == "speed_boost":
+def draw_game_state(game : Game):
+    """Draw the game state on the screen."""
+    screen.fill(black)
+    for snake in game.get_snakes().values():
+        for block in snake.get_body_segments():
+            pygame.draw.rect(screen, snake.get_color(), pygame.Rect(block[0], block[1], block_size, block_size))
+    for powerup in game.get_available_foods():
+        if powerup.item_type == "speed boost":
             pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Yellow for speed boost
         elif powerup.item_type == "freeze":
             pygame.draw.rect(screen, blue, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Blue for freeze debuff
+        elif powerup.item_type == "normal":
+            pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))
+    score_display(game.get_scores())
+    pygame.display.update()
 
-        score_display(score)
-        pygame.display.update()
+def game_loop():
+    # Initial snake setup
+    game = Game(screen_size=(width, height), block_size=block_size)
 
-        # Check if snake is still alive
-        if not s1.is_alive():
-            game_over_screen(score)  # Call game over screen when the snake is dead
-            running = False
+    s1 = Snake([[100, 50], [50, 50]], name = "Player 1", key_map={"UP" : pygame.K_w, "DOWN" : pygame.K_s, "LEFT" : pygame.K_a, "RIGHT" : pygame.K_d}, color = (0, 0, 255))
+    s2 = Snake([[1000, 1000], [1000, 1050]], name = "Player 2", key_map={"UP" : pygame.K_UP, "DOWN" : pygame.K_DOWN, "LEFT" : pygame.K_LEFT, "RIGHT" : pygame.K_RIGHT})
 
-        # Control speed (adjust for speed boost if active)
-        if s1._Snake__is_speed_boosted:  # Check if speed boost is active
-            clock.tick(snake_speed * 5)  # Speed up the game loop if speed boost is active
-        elif s1._Snake__is_frozen:  # Snake movement is slowed down or halted when frozen
-            clock.tick(snake_speed / 2)  # Slow down game speed if frozen
+    game.add_snake(s1)
+    game.add_snake(s2)
+    
+    while not game.is_game_over():
+        # Event handling (moving snake, quitting the game, etc.)
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                print("Quit")
+                pygame.quit()
+                quit()
+        game.update(events)
+        draw_game_state(game)
+
+        s1 : Snake = game.get_snakes()["Player 1"]
+        if s1.is_speed_boosted():
+            tick_speed = snake_speed * 5
+        elif s1.is_frozen():
+            tick_speed = snake_speed / 2
         else:
-            
-            clock.tick(snake_speed)  # Regular game speed
-        # In the game loop, we need to check if the snake is frozen and prevent movement
-        if s1._Snake__is_frozen:
-            clock.tick(snake_speed)  # Snake movement is slowed down or halted when frozen
-        else:
-            clock.tick(snake_speed)
+            tick_speed = snake_speed
+        clock.tick(tick_speed)
 
         
 def game_over_screen(score):
@@ -172,4 +116,5 @@ def game_over_screen(score):
                     quit()
 
 # Run the game
-game_loop()
+if __name__ == "__main__":
+    game_loop()

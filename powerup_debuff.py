@@ -14,12 +14,19 @@ class PowerUpOrDebuff:
         self.duration = duration  # Duration in milliseconds
         self.position = position  # Position on the screen
 
+    def get_position(self):
+        return self.position
+
     def apply_effect(self, snake):
         """Apply the effect to the snake."""
         if self.item_type == "speed_boost":
             snake.apply_speed_boost(self.duration)
         elif self.item_type == "freeze":
             snake.apply_freeze(self.duration)
+        snake.eat(1)
+        snake.add_score(10)
+
+        
         # You can add more effects here (e.g., size change, temporary invincibility, etc.)
 
     @staticmethod
@@ -39,3 +46,7 @@ class PowerUpOrDebuff:
         # Random position on the grid (assuming 10x10 grid and 600x400 screen)
         position = [random.randint(0, 59) * 10, random.randint(0, 39) * 10]  
         return PowerUpOrDebuff(item_type, duration, position)
+
+    @staticmethod
+    def get_item_type_list():
+        return ["speed boost", "freeze", "normal"]
