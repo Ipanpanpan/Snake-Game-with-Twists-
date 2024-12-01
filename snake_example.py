@@ -67,7 +67,7 @@ def game_loop():
     # Initial snake setup
     game = Game(screen_size=(width, height), block_size=block_size)
 
-    s1 = Snake([[100, 50], [50, 50]], name = "Player 1", key_map={"UP" : pygame.K_w, "DOWN" : pygame.K_s, "LEFT" : pygame.K_a, "RIGHT" : pygame.K_d}, color = (0, 0, 255))
+    s1 = Snake([[100, 50], [50, 50]], name = "Player 1", key_map={"UP" : pygame.K_w, "DOWN" : pygame.K_s, "LEFT" : pygame.K_a, "RIGHT" : pygame.K_d}, color = (0, 0, 255), update_rate= 40)
     s2 = Snake([[1000, 1000], [1000, 1050]], name = "Player 2", key_map={"UP" : pygame.K_UP, "DOWN" : pygame.K_DOWN, "LEFT" : pygame.K_LEFT, "RIGHT" : pygame.K_RIGHT})
 
     game.add_snake(s1)
@@ -91,7 +91,7 @@ def game_loop():
             tick_speed = snake_speed / 2
         else:
             tick_speed = snake_speed
-        clock.tick(tick_speed)
+        clock.tick(game.get_fps())
 
         
 def game_over_screen(score):
