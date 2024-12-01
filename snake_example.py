@@ -73,7 +73,6 @@ def game_loop():
     game.add_snake(s1)
     game.add_snake(s2)
     
-    print(game.is_game_over())
     while not game.is_game_over():
         # Event handling (moving snake, quitting the game, etc.)
         events = pygame.event.get()
