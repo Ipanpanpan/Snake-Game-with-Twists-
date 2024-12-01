@@ -1,16 +1,13 @@
 import pygame
-from typing import List
+from typing import List, Tuple
 from powerup_debuff import PowerUpOrDebuff
+from numpy import random as np_random
+import random
 
 class Snake:
-    __block_size = None
+    __block_size = 10
 
-    def set_block_size(block_size):
-        assert type(block_size) == int and block_size > 0
-        Snake.__block_size = block_size
-
-    def __init__(self, positions : List[List[int]]):
-        assert Snake.__block_size != None, "use Snake.set_block_size(block_size)"
+    def __init__(self, positions : List[List[int]], name : str ,color = (0, 255, 0), key_map = None):
 
         self.__head_position : List[int] = positions[0].copy()
 
@@ -32,20 +29,30 @@ class Snake:
         except:
             self.__direction = "RIGHT"
 
-        self.__food_stock = 30
+
+        # Internal Condition
+        self.__food_stock = 0
         self.__is_alive = True
         self.__is_frozen = False  # Initialize the frozen state to False
         self.__freeze_end_time = None  # Initialize the freeze end time to None
         self.__is_speed_boosted = False  # Make sure speed boost is initialized
+        self.__speed_boost_end_time = None  # Initialize the speed boost end time to None
+        self.__score = 0
+        self.__name = name
         
+
+        #Cosmetic
+        self.__color = color
+        if key_map is None:
+            self.__key_map = {"UP" : pygame.K_UP , "DOWN" : pygame.K_DOWN, 
+                                "LEFT" : pygame.K_LEFT, "RIGHT" : pygame.K_RIGHT}
+        else:
+            self.__key_map = key_map
 
     def __init_body_segments(self, positions):
         self.__body_segments : List[List[int]] = []
         for segment, segment2 in zip(positions[:-1], positions[1:]):
-            assert (segment[0] % Snake.__block_size == 0 and 
-                    segment2[0] % Snake.__block_size == 0), (
-                        "Make sure the snake positions is divisible by block size") 
-
+            
             self.__body_segments.append(segment)
             while True:
                 seg = self.__body_segments[-1].copy()
@@ -73,6 +80,7 @@ class Snake:
         
         self.__body_segments.append(positions[-1])
     
+    # Setters
 
     def set_head_positions(self, position : List[int]):
         self.__head_position = position
@@ -88,6 +96,35 @@ class Snake:
         elif direction == 'RIGHT' and self.__direction != 'LEFT':
             self.__direction = 'RIGHT'
 
+    def set_color(self, color : Tuple):
+        assert isinstance(color, tuple) and len(color) == 3, "Invalid color"
+        self.__color = color 
+    
+    def set_score(self, score : int):
+        self.__score = score
+    
+    def add_score(self, score : int):
+        self.__score += score
+
+    def add_body_segment(self):
+        """Add a new segment to the snake's body."""
+        # Append a new body segment at the position of the last segment
+        self.__body_segments.append(self.__body_segments[-1].copy())
+
+    def offset_head_position(self, offset_x = 0, offset_y = 0):
+        self.__head_position[0] += offset_x
+        self.__head_position[1] += offset_y
+
+    def insert_segment(self, position, index = 0):
+        self.__body_segments.insert(index, position)
+
+    def add_food_stock(self, amount):
+        self.__food_stock += amount
+
+    def pop_segment(self, index = -1):
+        return self.__body_segments.pop(index)
+
+    # Getters
     def get_body_segments(self):
         return self.__body_segments.copy()
     
@@ -97,9 +134,48 @@ class Snake:
     def get_direction(self):
         return self.__direction
     
+    def get_color(self):
+        return self.__color
+    
+    def get_score(self):
+        return self.__score
+
+    def get_active_effects(self):
+        active_effects = []
+    
+        if getattr(self, "__is_frozen", False):
+            active_effects.append("freeze")
+    
+        if getattr(self, "__is_speed_boosted", False):
+            active_effects.append("speed_boost")
+    
+        return active_effects
+
+    def get_name(self):
+        return self.__name
+
     def is_alive(self):
         return self.__is_alive
     
+    def is_frozen(self):
+        return self.__is_frozen
+    
+    def is_speed_boosted(self):
+        return self.__is_speed_boosted
+    
+    def get_food_stock(self):
+        return self.__food_stock
+    
+    def get_freeze_end_time(self):
+        return self.__freeze_end_time
+
+    def get_speed_boost_end_time(self):
+        return self.__speed_boost_end_time
+
+    def get_key_map(self):
+        return self.__key_map.copy()
+    # Methods
+
     def kill(self):
         self.__is_alive = False
 
@@ -126,57 +202,17 @@ class Snake:
         self.__is_speed_boosted = False
         self.__speed_boost_end_time = None
 
-    def get_active_effects(self):
-        active_effects = []
-    
-        if getattr(self, "__is_frozen", False):
-            active_effects.append("freeze")
-    
-        if getattr(self, "__is_speed_boosted", False):
-            active_effects.append("speed_boost")
-    
-        return active_effects
+    def __eq__(self, other):
+        if not isinstance(other, Snake):
+            return False
+        return self.__name == other.get_name()
 
 
-    def update(self):
-        assert id(self.__head_position) != id(self.__body_segments[0])
 
-        if self.__is_frozen and pygame.time.get_ticks() > self.__freeze_end_time:
-            self.remove_freeze()  # Unfreeze after the duration ends
-        
-        if self.__is_frozen:
-            return  # If frozen, don't update the snake's position
-
-        if self.__is_speed_boosted and pygame.time.get_ticks() > self.__speed_boost_end_time:
-            self.remove_speed_boost()  # End speed boost after the duration expires
+   
 
 
-        if self.__direction == 'UP':
-            self.__head_position[1] -= Snake.__block_size
-        if self.__direction == 'DOWN':
-            self.__head_position[1] += Snake.__block_size
-        if self.__direction == 'LEFT':
-            self.__head_position[0] -= Snake.__block_size
-        if self.__direction == 'RIGHT':
-            self.__head_position[0] += Snake.__block_size
 
-        # Insert the new head position at the front
-        self.__body_segments.insert(0, self.get_head_position())
-        
-        # If the snake eats food, increase the food stock and add a body segment
-        if self.__food_stock:
-            self.__food_stock -= 1
-        else: 
-            # Remove the last body segment if no food is eaten (tail moves)
-            self.__body_segments.pop()
-        
-        if self.__head_position in self.__body_segments[1:]:
-            self.kill()
-
-    def add_body_segment(self):
-        """Add a new segment to the snake's body."""
-        # Append a new body segment at the position of the last segment
-        self.__body_segments.append(self.__body_segments[-1].copy())
 
 def main():
     x = [1,2,3]
