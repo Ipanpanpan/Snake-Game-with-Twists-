@@ -202,6 +202,9 @@ class Snake:
         self.__is_speed_boosted = False
         self.__speed_boost_end_time = None
 
+    def score_debuff(self, score: int):
+        self.__score -= score        
+
     def __eq__(self, other):
         if not isinstance(other, Snake):
             return False

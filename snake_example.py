@@ -60,6 +60,8 @@ def draw_game_state(game : Game):
             pygame.draw.rect(screen, blue, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Blue for freeze debuff
         elif powerup.item_type == "normal":
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))
+        elif powerup.item_type == "score_decrease":
+            pygame.draw.rect(screen, (255, 192, 203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
     score_display(game.get_scores())
     pygame.display.update()
 
