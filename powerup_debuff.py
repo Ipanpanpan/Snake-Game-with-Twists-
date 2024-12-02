@@ -23,6 +23,8 @@ class PowerUpOrDebuff:
             snake.apply_speed_boost(self.duration)
         elif self.item_type == "freeze":
             snake.apply_freeze(self.duration)
+        elif self.item_type == "score_decrease":
+            snake.score_debuff(60)
         snake.eat(1)
         snake.add_score(10)
 
@@ -33,9 +35,11 @@ class PowerUpOrDebuff:
     def spawn():
         """Spawn a random power-up or debuff."""
         # We'll ensure that the "blue fruit" (or freeze item) is always a "freeze" debuff
-        item_type = random.choice(["speed_boost", "freeze"])  # Randomly decide between speed_boost and freeze
+        item_type = random.choice(["speed_boost", "freeze","score_decrease"])  # Randomly decide between speed_boost and freeze
         if item_type == "freeze":
             item_type = "freeze"  # Ensure blue fruit is always freeze debuff
+        elif item_type == "score_decrease":
+            item_type = "score_decrease"
 
         # Adjust duration based on the item type
         if item_type == "speed_boost":
@@ -49,4 +53,4 @@ class PowerUpOrDebuff:
 
     @staticmethod
     def get_item_type_list():
-        return ["speed boost", "freeze", "normal"]
+        return ["speed boost", "freeze", "normal","score_decrease"]

@@ -89,7 +89,7 @@ class Game:
         
         #Add food
         if self.__min_foods > len(self.__foods):
-            item_type = np_random.choice(PowerUpOrDebuff.get_item_type_list(), p = [0.25, 0.25, 0.5])
+            item_type = np_random.choice(PowerUpOrDebuff.get_item_type_list(), p = [0.16, 0.16, 0.52, 0.16])
             self.__foods.append(PowerUpOrDebuff(item_type, 2, self.get_random_position()))
         #Movement (adding new segment)
         snake.insert_segment(snake.get_head_position(), 0)
