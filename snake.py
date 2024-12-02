@@ -7,7 +7,7 @@ import random
 class Snake:
     __block_size = 10
 
-    def __init__(self, positions : List[List[int]], name : str ,color = (0, 255, 0), key_map = None):
+    def __init__(self, positions : List[List[int]], name : str ,color = (0, 255, 0), key_map = None, update_rate = 15):
 
         self.__head_position : List[int] = positions[0].copy()
 
@@ -39,7 +39,7 @@ class Snake:
         self.__speed_boost_end_time = None  # Initialize the speed boost end time to None
         self.__score = 0
         self.__name = name
-        
+        self.__update_rate = update_rate
 
         #Cosmetic
         self.__color = color
@@ -103,6 +103,9 @@ class Snake:
     def set_score(self, score : int):
         self.__score = score
     
+    def set_update_rate(self, rate : int):
+        self.__update_rate = rate
+
     def add_score(self, score : int):
         self.__score += score
 
@@ -153,6 +156,9 @@ class Snake:
 
     def get_name(self):
         return self.__name
+
+    def get_update_rate(self):
+        return self.__update_rate
 
     def is_alive(self):
         return self.__is_alive

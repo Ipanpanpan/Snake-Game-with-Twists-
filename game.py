@@ -1,5 +1,5 @@
 from powerup_debuff import PowerUpOrDebuff
-from typing import List
+from typing import List, Dict
 import numpy.random as np_random
 from snake import Snake
 import pygame
@@ -7,17 +7,19 @@ import numpy as np
 
 class Game:
 
-    def __init__(self, screen_size, block_size, min_foods = 4):
+    def __init__(self, screen_size, block_size, min_foods = 4, fps = 60):
         self.__block_size = block_size # block size in pixels
         self.__screen_size = screen_size #(width, height)
 
         self.__foods : List[PowerUpOrDebuff]= [] 
         self.__min_foods : int = 4
         
-        self.__snakes = {}
+        self.__snakes : Dict[str, Snake] = {}
 
         self.__is_game_over = False
+        self.__fps = fps
 
+        self.__frame_counter = 0
         Snake.__block_size = block_size
     
     # Setters
@@ -58,6 +60,9 @@ class Game:
     def get_scores(self):
         return {name : snake.get_score() for name, snake in self.__snakes.items()}
 
+    def get_fps(self):
+        return self.__fps
+
     def is_game_over(self):
         return self.__is_game_over
 
@@ -72,14 +77,6 @@ class Game:
             snake.remove_speed_boost()  # End speed boost after the duration expires
 
 
-        if snake.get_direction() == 'UP':
-            snake.offset_head_position(offset_y=-self.__block_size)
-        if snake.get_direction() == 'DOWN':
-            snake.offset_head_position(offset_y= self.__block_size)
-        if snake.get_direction() == 'LEFT':
-            snake.offset_head_position(offset_x=-self.__block_size)
-        if snake.get_direction() == 'RIGHT':
-            snake.offset_head_position(offset_x= self.__block_size)
 
         #Eat food
         for i, food in enumerate(self.__foods):
@@ -91,16 +88,28 @@ class Game:
         if self.__min_foods > len(self.__foods):
             item_type = np_random.choice(PowerUpOrDebuff.get_item_type_list(), p = [0.16, 0.16, 0.52, 0.16])
             self.__foods.append(PowerUpOrDebuff(item_type, 2, self.get_random_position()))
-        #Movement (adding new segment)
-        snake.insert_segment(snake.get_head_position(), 0)
         
-        #if food stock available
-        if snake.get_food_stock() > 0:
-            #Not remove last segment
-            snake.add_food_stock(-1)
-        else: 
-            # Remove the last body segment
-            snake.pop_segment()
+        #Movement (adding new segment)
+        frame_interval = self.__fps // snake.get_update_rate()
+        if self.__frame_counter % frame_interval == 0:
+            if snake.get_direction() == 'UP':
+                snake.offset_head_position(offset_y=-self.__block_size)
+            if snake.get_direction() == 'DOWN':
+                snake.offset_head_position(offset_y= self.__block_size)
+            if snake.get_direction() == 'LEFT':
+                snake.offset_head_position(offset_x=-self.__block_size)
+            if snake.get_direction() == 'RIGHT':
+                snake.offset_head_position(offset_x= self.__block_size)
+
+            snake.insert_segment(snake.get_head_position(), 0)
+            
+            #if food stock available
+            if snake.get_food_stock() > 0:
+                #Not remove last segment
+                snake.add_food_stock(-1)
+            else: 
+                # Remove the last body segment
+                snake.pop_segment()
         
 
         #Edge of screen handling
@@ -127,8 +136,9 @@ class Game:
             snake.kill()
 
     def update(self, events):
+        
         self.__is_game_over = True
-        for snake in self.__snakes.copy().values():
+        for snake in self.__snakes.values():
             if not snake.is_alive():
                 continue
 
@@ -142,11 +152,11 @@ class Game:
                         snake.set_direction('LEFT')
                     elif event.key == snake.get_key_map()['RIGHT']:
                         snake.set_direction('RIGHT')
-            
             self.update_snake(snake)
             self.__is_game_over = False
-    
-
+        
+            
+        self.__frame_counter += 1
 
 
     def get_random_position(self):
