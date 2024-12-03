@@ -7,14 +7,14 @@ import numpy as np
 
 class Game:
 
-    def __init__(self, screen_size, block_size, min_foods = 4, fps = 60):
-        self.__block_size = block_size # block size in pixels
-        self.__screen_size = screen_size #(width, height)
+    def __init__(self, screen_size, block_size, min_foods=4, fps=60):
+        self.__block_size = block_size  # block size in pixels
+        self.__screen_size = screen_size  # (width, height)
 
-        self.__foods : List[PowerUpOrDebuff]= [] 
-        self.__min_foods : int = 4
+        self.__foods: List[PowerUpOrDebuff] = [] 
+        self.__min_foods: int = min_foods
         
-        self.__snakes : Dict[str, Snake] = {}
+        self.__snakes: Dict[str, Snake] = {}
 
         self.__is_game_over = False
         self.__fps = fps
@@ -29,13 +29,13 @@ class Game:
     def set_screen_size(self, width, height):
         self.__screen_size = (width, height)
     
-    def add_food(self, food : PowerUpOrDebuff):
+    def add_food(self, food: PowerUpOrDebuff):
         self.__foods.append(food)
     
     def set_min_foods(self, min_foods):
         self.__min_foods = min_foods
 
-    def add_snake(self, snake : Snake):
+    def add_snake(self, snake: Snake):
         assert snake.get_name() not in self.__snakes, "Name already exists"
         for segment in snake.get_body_segments():
             assert segment[0] % self.__block_size == 0 and segment[1] % self.__block_size == 0, "Invalid segment position"
@@ -58,7 +58,7 @@ class Game:
         return self.__snakes.copy()
     
     def get_scores(self):
-        return {name : snake.get_score() for name, snake in self.__snakes.items()}
+        return {name: snake.get_score() for name, snake in self.__snakes.items()}
 
     def get_fps(self):
         return self.__fps
@@ -66,103 +66,134 @@ class Game:
     def is_game_over(self):
         return self.__is_game_over
 
-    def update_snake(self, snake : Snake):
-        if snake.is_frozen() and pygame.time.get_ticks() > snake.get_freeze_end_time():
-            snake.remove_freeze()  # Unfreeze after the duration ends
-        
-        if snake.is_frozen():
-            return  # If frozen, don't update the snake's position
+    def update_snake(self, snake: Snake):
+        current_time = pygame.time.get_ticks()
 
-        if snake.is_speed_boosted() and pygame.time.get_ticks() > snake.get_speed_boost_end_time():
+        # Handle speed boost expiration
+        if snake.is_speed_boosted() and current_time > snake.get_speed_boost_end_time():
             snake.remove_speed_boost()  # End speed boost after the duration expires
+            print(f"{snake.get_name()} has had their speed boost removed.")
+    
+        # Handle slow down expiration
+        if snake.is_slowed_down() and current_time > snake.get_slow_down_end_time():
+            snake.remove_slow_down()  # End slow down after the duration expires
+            print(f"{snake.get_name()} has recovered from slow down.")
 
+        # Handle invincibility expiration
+        if snake.is_invincible() and current_time > snake.get_invincibility_end_time():
+            snake.remove_invincibility()  # End invincibility after the duration expires
+            print(f"{snake.get_name()} is no longer invincible.")
 
+        # Adjust snake's update rate based on effects
+        if snake.is_slowed_down():
+            # Dramatically slow down: halve the update rate, with a minimum of 1
+            slow_down_update_rate = max(1, snake.get_update_rate() // 2)
+            snake.set_update_rate(slow_down_update_rate)
+            print(f"{snake.get_name()} is slowed down. Update rate set to {slow_down_update_rate}.")
+        else:
+            # Reset to default update rate if not slowed down
+            default_update_rate = 15  # Adjust as per your game's default
+            snake.set_update_rate(default_update_rate)
+            print(f"{snake.get_name()}'s update rate reset to {default_update_rate}.")
 
-        #Eat food
+        if snake.is_speed_boosted():
+            # Double the update rate for speed boost
+            boosted_update_rate = snake.get_update_rate() * 2
+            snake.set_update_rate(boosted_update_rate)
+            print(f"{snake.get_name()} has a speed boost. Update rate set to {boosted_update_rate}.")
+
+        # Handle eating food
         for i, food in enumerate(self.__foods):
             if food.get_position() == snake.get_head_position():
                 food.apply_effect(snake)
                 self.__foods.pop(i)
-        
-        #Add food
+
+        # Add food if below minimum
         if self.__min_foods > len(self.__foods):
-            item_type = np_random.choice(PowerUpOrDebuff.get_item_type_list(), p = [0.16, 0.16, 0.52, 0.16])
-            self.__foods.append(PowerUpOrDebuff(item_type, 2, self.get_random_position()))
-        
-        #Movement (adding new segment)
+            new_food = PowerUpOrDebuff.spawn()
+            # Prevent spawning on snakes or existing foods
+            while new_food.get_position() in [segment for s in self.__snakes.values() for segment in s.get_body_segments()] or new_food.get_position() in [food.get_position() for food in self.__foods]:
+                new_food = PowerUpOrDebuff.spawn()
+            self.__foods.append(new_food)
+
+        # Movement logic
         frame_interval = self.__fps // snake.get_update_rate()
         if self.__frame_counter % frame_interval == 0:
             if snake.get_direction() == 'UP':
                 snake.offset_head_position(offset_y=-self.__block_size)
-            if snake.get_direction() == 'DOWN':
-                snake.offset_head_position(offset_y= self.__block_size)
-            if snake.get_direction() == 'LEFT':
+            elif snake.get_direction() == 'DOWN':
+                snake.offset_head_position(offset_y=self.__block_size)
+            elif snake.get_direction() == 'LEFT':
                 snake.offset_head_position(offset_x=-self.__block_size)
-            if snake.get_direction() == 'RIGHT':
-                snake.offset_head_position(offset_x= self.__block_size)
+            elif snake.get_direction() == 'RIGHT':
+                snake.offset_head_position(offset_x=self.__block_size)
 
             snake.insert_segment(snake.get_head_position(), 0)
             
-            #if food stock available
+            # Handle food stock
             if snake.get_food_stock() > 0:
-                #Not remove last segment
-                snake.add_food_stock(-1)
-            else: 
-                # Remove the last body segment
-                snake.pop_segment()
-        
+                snake.add_food_stock(-1)  # Use food stock to grow
+            else:
+                snake.pop_segment()  # Remove last segment if not growing
 
-        #Edge of screen handling
-        width = self.__screen_size[0]
-        height = self.__screen_size[1]
-        if snake.get_head_position()[0] < 0:
-            snake.set_head_positions([width - self.__block_size, snake.get_head_position()[1]])
-        elif snake.get_head_position()[0] >= width:
-            snake.set_head_positions([0, snake.get_head_position()[1]])
-        elif snake.get_head_position()[1] < 0:
-            snake.set_head_positions([snake.get_head_position()[0], height - self.__block_size])
-        elif snake.get_head_position()[1] >= height:
-            snake.set_head_positions([snake.get_head_position()[0], 0])
-        
+        # Handle screen edge wrapping
+        width, height = self.__screen_size
+        head_x, head_y = snake.get_head_position()
+        if head_x < 0:
+            snake.set_head_positions([width - self.__block_size, head_y])
+        elif head_x >= width:
+            snake.set_head_positions([0, head_y])
+        if head_y < 0:
+            snake.set_head_positions([head_x, height - self.__block_size])
+        elif head_y >= height:
+            snake.set_head_positions([head_x, 0])
 
-        #Gameover
+        # Check for collisions with other snakes and itself
         occupied_positions = []
         for s in self.__snakes.values():
             if s != snake:
                 occupied_positions.extend(s.get_body_segments())
             else:
+                # Exclude the head to prevent self-collision detection on head position
                 occupied_positions.extend(s.get_body_segments()[1:])
+
         if snake.get_head_position() in occupied_positions:
-            snake.kill()
+            if not snake.is_invincible():
+                snake.kill()
+                print(f"{snake.get_name()} collided with another snake or its own body and is killed.")
+            else:
+                print(f"{snake.get_name()} collided while invincible and remains alive.")
 
     def update(self, events):
-        
-        self.__is_game_over = True
-        for snake in self.__snakes.values():
-            if not snake.is_alive():
-                continue
-
-            for event in events:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == snake.get_key_map()['UP']:
-                        snake.set_direction('UP')
-                    elif event.key == snake.get_key_map()['DOWN']:
-                        snake.set_direction('DOWN')
-                    elif event.key == snake.get_key_map()['LEFT']:
-                        snake.set_direction('LEFT')
-                    elif event.key == snake.get_key_map()['RIGHT']:
-                        snake.set_direction('RIGHT')
-            self.update_snake(snake)
+        # Check how many snakes are alive
+        alive_snakes = [snake for snake in self.__snakes.values() if snake.is_alive()]
+        if len(alive_snakes) <= 1:
+            # Game over if one or zero snakes are alive
+            self.__is_game_over = True
+            if len(alive_snakes) == 1:
+                winner = alive_snakes[0].get_name()
+                print(f"{winner} wins the game!")
+        else:
             self.__is_game_over = False
-        
-            
-        self.__frame_counter += 1
 
+            for snake in alive_snakes:
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == snake.get_key_map()['UP']:
+                            snake.set_direction('UP')
+                        elif event.key == snake.get_key_map()['DOWN']:
+                            snake.set_direction('DOWN')
+                        elif event.key == snake.get_key_map()['LEFT']:
+                            snake.set_direction('LEFT')
+                        elif event.key == snake.get_key_map()['RIGHT']:
+                            snake.set_direction('RIGHT')
+                self.update_snake(snake)
+        
+        self.__frame_counter += 1
 
     def get_random_position(self):
         width = self.__screen_size[0]
         height = self.__screen_size[1]
         block_size = self.__block_size
-        return [np_random.randint(1, (width // block_size)) * block_size,
-            np_random.randint(1, (height // block_size)) * block_size]
-
+        return [np_random.randint(0, (width // block_size)) * block_size,
+                np_random.randint(0, (height // block_size)) * block_size]
