@@ -96,7 +96,7 @@ def draw_game_state(game: Game):
         elif powerup.item_type == "invincibility":
             pygame.draw.rect(screen, white, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # White for invincibility
         elif powerup.item_type == "score_decrease":
-            pygame.draw.rect(screen, (255, 192, 203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
+            pygame.draw.rect(screen, (200, 50, 50), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "food_party":
             pygame.draw.rect(screen, green, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "normal":
@@ -131,6 +131,11 @@ def game_loop():
                 print("Quit")
                 pygame.quit()
                 quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    print("Escape key pressed. Quit game.")
+                    pygame.quit()
+                    quit()
         game.update(events)
         draw_game_state(game)
 
