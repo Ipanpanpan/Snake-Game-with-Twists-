@@ -86,6 +86,11 @@ def draw_game_state(game: Game):
         # Draw the snake's body
         for block in snake.get_body_segments():
             pygame.draw.rect(screen, snake_color, pygame.Rect(block[0], block[1], block_size, block_size))
+
+        if snake.is_armor_active():
+            armor_positions = snake.get_armor_positions()
+            for pos in armor_positions:
+                pygame.draw.rect(screen, gray, pygame.Rect(pos[0], pos[1], block_size, block_size))
     
     # Draw power-ups/debuffs
     for powerup in game.get_available_foods():
@@ -96,11 +101,13 @@ def draw_game_state(game: Game):
         elif powerup.item_type == "invincibility":
             pygame.draw.rect(screen, white, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # White for invincibility
         elif powerup.item_type == "score_decrease":
-            pygame.draw.rect(screen, (200, 50, 50), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
+            pygame.draw.rect(screen, (255,192,203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "food_party":
             pygame.draw.rect(screen, green, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "normal":
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Red for normal fruit
+        elif powerup.item_type == "armor":
+            pygame.draw.rect(screen, (156,81,0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # brown for armor fruit
     
     # Display scores
     score_display(game.get_scores())
