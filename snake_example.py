@@ -4,6 +4,7 @@ import random
 from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
 from game import Game
+from map import Map, Room, Pixel
 # Initialize pygame
 pygame.init()
 
@@ -49,7 +50,11 @@ def score_display(score):
 
 def draw_game_state(game: Game):
     """Draw the game state on the screen."""
+    
     screen.fill(black)
+    game.draw_map(screen)
+
+
     for snake in game.get_snakes().values():
         # Determine snake color based on its state
         if snake.is_invincible():
