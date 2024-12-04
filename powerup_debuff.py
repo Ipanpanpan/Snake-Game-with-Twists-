@@ -51,7 +51,7 @@ class PowerUpOrDebuff:
         elif item_type == "slow_down":
             duration = 2000  # 2 seconds
         elif item_type == "invincibility":
-            duration = 2000  # 2 seconds
+            duration = 5000  # 2 seconds
         elif item_type == "score_decrease":
             duration = random.randint(3000, 5000)  # 3 to 5 seconds
         elif item_type == "normal":
