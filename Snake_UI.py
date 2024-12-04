@@ -69,7 +69,132 @@ def play():
                     s.game_loop() # add time
 
         pygame.display.update()
-    
+
+def ask_tutorial():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\skiptutorial.png"), (0, 0))
+        next_page = Button(image=None, pos=(370, 505), text_input="YES", font=get_font(270), base_color="white", hovering_color="#d7fcd4")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1000, 505), text_input="NO", font=get_font(270), base_color="white", hovering_color="#d7fcd4")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    play()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial1()
+        pygame.display.update()
+
+
+def tutorial1():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\Tutorial-1.png"), (0, 0))
+        next_page = Button(image=None, pos=(1150, 605), text_input="NEXT", font=get_font(35), base_color="black", hovering_color="brown")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1150, 673), text_input="BACK", font=get_font(35), base_color="black", hovering_color="brown")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial2()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    ask_tutorial()
+        pygame.display.update()
+
+def tutorial2():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\Tutorial-2.png"), (0, 0))
+        next_page = Button(image=None, pos=(1150, 605), text_input="NEXT", font=get_font(35), base_color="black", hovering_color="brown")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1150, 673), text_input="BACK", font=get_font(35), base_color="black", hovering_color="brown")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial3()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial1()
+        
+        pygame.display.update()
+
+def tutorial3():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\Tutorial-3.png"), (0, 0))
+        next_page = Button(image=None, pos=(1150, 605), text_input="NEXT", font=get_font(35), base_color="black", hovering_color="brown")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1150, 673), text_input="BACK", font=get_font(35), base_color="black", hovering_color="brown")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial4()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial2()
+        
+        pygame.display.update()
+
+def tutorial4():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\Tutorial-4.png"), (0, 0))
+        next_page = Button(image=None, pos=(1150, 605), text_input="NEXT", font=get_font(35), base_color="black", hovering_color="brown")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1150, 673), text_input="BACK", font=get_font(35), base_color="black", hovering_color="brown")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial5()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial3()
+
+        pygame.display.update()
+
+def tutorial5():
+    while True:
+        TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+        SCREEN.blit(pygame.image.load("Assets\\Tutorial-5.png"), (0, 0))
+        next_page = Button(image=None, pos=(1150, 605), text_input="NEXT", font=get_font(35), base_color="black", hovering_color="brown")
+        next_page.changeColor(TUTOR_MOUSE_POS)
+        next_page.update(SCREEN)
+
+        back_page = Button(image=None, pos=(1150, 673), text_input="BACK", font=get_font(35), base_color="black", hovering_color="brown")
+        back_page.changeColor(TUTOR_MOUSE_POS)
+        back_page.update(SCREEN)
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if next_page.checkForInput(TUTOR_MOUSE_POS):
+                    play()
+                if back_page.checkForInput(TUTOR_MOUSE_POS):
+                    tutorial4()
+
+        pygame.display.update()
+
 def main_menu():
     while True:
         SCREEN.blit(BG, (0, 0))
@@ -92,7 +217,7 @@ def main_menu():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
                     play_music(time_music)
-                    play()
+                    ask_tutorial()
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
