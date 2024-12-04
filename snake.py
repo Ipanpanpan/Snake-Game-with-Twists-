@@ -40,6 +40,8 @@ class Snake:
         self.__is_invincible = False  # Initialize the invincibility state to False
         self.__invincibility_end_time = None  # Initialize the invincibility end time to None
         self.__invincibility_start_time = None  # Initialize invincibility start time to None
+        self.__is_armor_active = False  # Initialize armor state
+        self.__armor_end_time = None  # Initialize armor end time
         self.__score = 0
         self.__name = name
         self.__update_rate = update_rate
@@ -66,7 +68,7 @@ class Snake:
                 else:
                     seg[0] -= Snake.__block_size
 
-                assert seg not in self.__body_segments
+                assert seg not in self.__body_segments, "Overlapping segments detected during initialization."
                 self.__body_segments.append(seg)
 
             while True:
@@ -78,11 +80,11 @@ class Snake:
                 else:
                     seg[1] -= Snake.__block_size
 
-                assert seg not in self.__body_segments
+                assert seg not in self.__body_segments, "Overlapping segments detected during initialization."
                 self.__body_segments.append(seg)
         
         self.__body_segments.append(positions[-1])
-    
+
     # Setters
 
     def set_head_positions(self, position: List[int]):
@@ -158,6 +160,9 @@ class Snake:
         
         if getattr(self, "__is_invincible", False):
             active_effects.append("invincibility")
+        
+        if getattr(self, "__is_armor_active", False):
+            active_effects.append("armor")
     
         return active_effects
 
@@ -179,6 +184,9 @@ class Snake:
     def is_invincible(self):
         return self.__is_invincible
     
+    def is_armor_active(self):
+        return self.__is_armor_active
+    
     def get_speed_boost_end_time(self):
         return self.__speed_boost_end_time
     
@@ -188,6 +196,9 @@ class Snake:
     def get_invincibility_end_time(self):
         return self.__invincibility_end_time
     
+    def get_armor_end_time(self):
+        return self.__armor_end_time
+
     def get_invincibility_start_time(self):
         return self.__invincibility_start_time
     
@@ -200,6 +211,7 @@ class Snake:
 
     def kill(self):
         self.__is_alive = False
+        print(f"{self.__name} has been killed.")
 
     def eat(self, amount):
         self.__food_stock += amount
@@ -208,21 +220,25 @@ class Snake:
         """Apply a speed boost to the snake for a specified duration."""
         self.__is_speed_boosted = True
         self.__speed_boost_end_time = pygame.time.get_ticks() + duration
+        print(f"{self.__name} received a speed boost for {duration} ms.")
 
     def remove_speed_boost(self):
         """Remove the speed boost after the duration expires."""
         self.__is_speed_boosted = False
         self.__speed_boost_end_time = None
+        print(f"{self.__name}'s speed boost has ended.")
 
     def apply_slow_down(self, duration: int):
         """Apply a slow down effect to the snake for a specified duration."""
         self.__is_slowed_down = True
         self.__slow_down_end_time = pygame.time.get_ticks() + duration
+        print(f"{self.__name} has been slowed down for {duration} ms.")
 
     def remove_slow_down(self):
         """Remove the slow down effect after the duration expires."""
         self.__is_slowed_down = False
         self.__slow_down_end_time = None
+        print(f"{self.__name} has recovered from slow down.")
 
     def apply_invincibility(self, duration: int):
         """Apply invincibility to the snake for a specified duration."""
@@ -231,13 +247,118 @@ class Snake:
         self.__invincibility_start_time = pygame.time.get_ticks()  # Store start time
         self.__original_color = self.__color  # Store original color to revert back later
         self.__color = (0, 0, 0)  # Change color to black
-    
+        print(f"{self.__name} is now invincible for {duration} ms.")
+
     def remove_invincibility(self):
         """Remove invincibility after the duration expires."""
         self.__is_invincible = False
         self.__invincibility_end_time = None
         self.__invincibility_start_time = None  # Reset start time
         self.__color = self.__original_color  # Revert to original color
+        print(f"{self.__name} is no longer invincible.")
+
+    def apply_armor(self, duration: int):
+        """Activate armor for the snake for a specified duration."""
+        self.__is_armor_active = True
+        self.__armor_end_time = pygame.time.get_ticks() + duration
+        print(f"{self.__name} has activated armor for {duration} ms.")
+
+    def remove_armor(self):
+        """Deactivate armor after the duration expires."""
+        self.__is_armor_active = False
+        self.__armor_end_time = None
+        print(f"{self.__name} has deactivated armor.")
+
+    def get_armor_positions(self):
+        """Calculate and return all armor block positions based on the snake's body directions."""
+        if not self.__is_armor_active:
+            return []
+        armor_positions = []
+        body_segments = self.get_body_segments()
+        num_segments = len(body_segments)
+        for i in range(num_segments - 1):
+            current = body_segments[i]
+            next_seg = body_segments[i + 1]
+            dx = next_seg[0] - current[0]
+            dy = next_seg[1] - current[1]
+            if dx > 0:
+                direction = 'RIGHT'
+            elif dx < 0:
+                direction = 'LEFT'
+            elif dy > 0:
+                direction = 'DOWN'
+            elif dy < 0:
+                direction = 'UP'
+            else:
+                direction = 'NONE'
+            
+            if direction == 'UP':
+                left_armor = [current[0] - self.__block_size, current[1]]
+                right_armor = [current[0] + self.__block_size, current[1]]
+            elif direction == 'DOWN':
+                left_armor = [current[0] + self.__block_size, current[1]]
+                right_armor = [current[0] - self.__block_size, current[1]]
+            elif direction == 'LEFT':
+                left_armor = [current[0], current[1] + self.__block_size]
+                right_armor = [current[0], current[1] - self.__block_size]
+            elif direction == 'RIGHT':
+                left_armor = [current[0], current[1] - self.__block_size]
+                right_armor = [current[0], current[1] + self.__block_size]
+            else:
+                # Default positions if direction is undefined
+                left_armor = [current[0] - self.__block_size, current[1]]
+                right_armor = [current[0] + self.__block_size, current[1]]
+
+            # Ensure armor blocks are within screen bounds
+            # Assuming screen size is 1280x720; adjust if different
+            if 0 <= left_armor[0] < 1280 and 0 <= left_armor[1] < 720:
+                armor_positions.append(left_armor)
+            if 0 <= right_armor[0] < 1280 and 0 <= right_armor[1] < 720:
+                armor_positions.append(right_armor)
+        
+        # Handle last segment (tail) direction same as previous
+        if num_segments >= 2:
+            last_seg = body_segments[-1]
+            second_last_seg = body_segments[-2]
+            dx = second_last_seg[0] - last_seg[0]
+            dy = second_last_seg[1] - last_seg[1]
+            if dx > 0:
+                direction = 'RIGHT'
+            elif dx < 0:
+                direction = 'LEFT'
+            elif dy > 0:
+                direction = 'DOWN'
+            elif dy < 0:
+                direction = 'UP'
+            else:
+                direction = 'NONE'
+            
+            if direction == 'UP':
+                left_armor = [last_seg[0] - self.__block_size, last_seg[1]]
+                right_armor = [last_seg[0] + self.__block_size, last_seg[1]]
+            elif direction == 'DOWN':
+                left_armor = [last_seg[0] + self.__block_size, last_seg[1]]
+                right_armor = [last_seg[0] - self.__block_size, last_seg[1]]
+            elif direction == 'LEFT':
+                left_armor = [last_seg[0], last_seg[1] + self.__block_size]
+                right_armor = [last_seg[0], last_seg[1] - self.__block_size]
+            elif direction == 'RIGHT':
+                left_armor = [last_seg[0], last_seg[1] - self.__block_size]
+                right_armor = [last_seg[0], last_seg[1] + self.__block_size]
+            else:
+                left_armor = [last_seg[0] - self.__block_size, last_seg[1]]
+                right_armor = [last_seg[0] + self.__block_size, last_seg[1]]
+
+            if 0 <= left_armor[0] < 1280 and 0 <= left_armor[1] < 720:
+                armor_positions.append(left_armor)
+            if 0 <= right_armor[0] < 1280 and 0 <= right_armor[1] < 720:
+                armor_positions.append(right_armor)
+
+        # Remove duplicate armor positions
+        armor_positions = [list(x) for x in set(tuple(x) for x in armor_positions)]
+        
+        print(f"{self.get_name()} Armor Positions: {armor_positions}")  # Debugging statement
+        return armor_positions
 
     def score_debuff(self, score: int):
         self.__score -= score        
