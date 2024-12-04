@@ -4,12 +4,18 @@ import numpy.random as np_random
 from snake import Snake
 import pygame
 import numpy as np
+from map import Map
+from map import Room
+
 
 class Game:
 
     def __init__(self, screen_size, block_size, min_foods=10, fps=60):
         self.__block_size = block_size  # block size in pixels
         self.__screen_size = screen_size  # (width, height)
+
+        self.__map : Map = Map(width=screen_size[0] // block_size, height=screen_size[1] // block_size, block_size=block_size)
+        self.__init_map()
 
         self.__foods: List[PowerUpOrDebuff] = [] 
         self.__min_foods: int = min_foods
@@ -22,6 +28,23 @@ class Game:
         self.__frame_counter = 0
         Snake.__block_size = block_size
     
+    def __init_map(self):
+        width, height = self.__screen_size
+
+        room1 = Room(width // self.get_block_size() //2, height // self.get_block_size() //2)
+
+        map_pos_x = ((self.__screen_size[0] // self.get_block_size() - room1.get_width()) //2) * self.get_block_size()
+        map_pos_y = ((self.__screen_size[1] // self.get_block_size() - room1.get_height()) //2) * self.get_block_size()
+        
+
+        room1.add_door("right", (room1.height // 2 - room1.height // 4, room1.height // 2 + room1.height // 4))
+        room1.add_door("left", (room1.height // 2 - room1.height // 4, room1.height // 2 + room1.height // 4))
+        room1.add_door("bottom", (room1.width // 2 - room1.width // 4, room1.width // 2 + room1.width // 4))
+        room1.add_door("top", (room1.width // 2 - room1.width // 4, room1.width // 2 + room1.width // 4))
+        
+        self.__map.add_room(room1, (map_pos_x, map_pos_y))       
+
+
     # Setters
     def set_block_size(self, block_size):
         self.__block_size = block_size
@@ -42,6 +65,25 @@ class Game:
         self.__snakes[snake.get_name()] = snake
     
     # Getters
+    def draw_map(self, screen):
+        """draw the map on the screen"""
+        screen.fill((0, 0, 0))
+        for room in self.__map.rooms.values():
+            pygame.draw.rect(screen, (100, 100, 100), pygame.Rect(room.pos[0], room.pos[1], room.get_width() * self.get_block_size(), room.get_height() * self.get_block_size()))
+            if room.isoccupied:
+                pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(room.pos[0] + self.get_block_size(), room.pos[1] + self.get_block_size(), 
+                                                                   (room.get_width() -2) * self.get_block_size(), (room.get_height() - 2) * self.get_block_size()))
+                room.isoccupied = False
+            for door in room.doors.items():
+                side, interval = door
+                if side == "top":
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + interval[0] * self.get_block_size(), room.pos[1], (interval[1] - interval[0]) * self.get_block_size(), self.get_block_size()))
+                elif side == "bottom":
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + interval[0] * self.get_block_size(), room.pos[1] + (room.get_height() - 1) * self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size(), self.get_block_size()))
+                elif side == "left":
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0], room.pos[1] + interval[0] * self.get_block_size(), self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size()))
+                elif side == "right":
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + (room.get_width() - 1) * self.get_block_size(), room.pos[1] + interval[0] * self.get_block_size(), self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size()))
     def get_block_size(self):
         return self.__block_size
     
@@ -178,7 +220,17 @@ class Game:
         
         # Increment frame counter
         self.__frame_counter += 1
-        
+
+        #wall collision
+        x_head = snake.get_head_position()[0] // self.get_block_size()
+        y_head = snake.get_head_position()[1] // self.get_block_size()
+        if self.__map.pixels[y_head, x_head] == 1:
+            snake.kill()
+            print(f"{snake.get_name()} collided with a wall and is killed.")
+        elif self.__map.pixels[y_head, x_head] != 0:
+            room = self.__map.get_room(self.__map.pixels[y_head, x_head])
+            room.isoccupied = True
+            
     def update(self, events):
         # Check how many snakes are alive
         alive_snakes = [snake for snake in self.__snakes.values() if snake.is_alive()]
