@@ -17,7 +17,7 @@ class PowerUpOrDebuff:
     def get_position(self):
         return self.position
 
-    def apply_effect(self, snake):
+    def apply_effect(self, snake, game):
         """Apply the effect to the snake."""
         print(f"Applying {self.item_type} to {snake.get_name()} for {self.duration} ms")  # Debug
         if self.item_type == "speed_boost":
@@ -28,6 +28,14 @@ class PowerUpOrDebuff:
             snake.apply_invincibility(self.duration)
         elif self.item_type == "score_decrease":
             snake.score_debuff(60)
+
+        elif self.item_type == "food_party":
+            for i in range(10):
+                current_position = self.get_position()
+                new_x = random.randint(-5,5) * game.get_block_size()
+                new_y = random.randint(-5,5) * game.get_block_size()
+                normal_food = PowerUpOrDebuff("normal",0, [current_position[0] + new_x, current_position[1] + new_y])
+                game.add_food(normal_food)
         elif self.item_type == "normal":
             snake.add_score(10)
             snake.add_body_segment()
@@ -39,8 +47,8 @@ class PowerUpOrDebuff:
         """Spawn a random power-up or debuff."""
         # Define probabilities for each item type
         # Adjust probabilities as desired
-        item_types = ["speed_boost", "slow_down", "invincibility", "score_decrease", "normal"]
-        probabilities = [0.15, 0.15, 0.10, 0.10, 0.50]  # Example probabilities: 50% normal fruit
+        item_types = ["speed_boost", "slow_down", "invincibility", "score_decrease", "food_party", "normal"]
+        probabilities = [0.1, 0.1, 0.1, 0.1, 0.1, 0.5]  # Example probabilities: 50% normal fruit
 
         # Randomly choose an item type based on defined probabilities
         item_type = random.choices(item_types, weights=probabilities, k=1)[0]
@@ -56,7 +64,8 @@ class PowerUpOrDebuff:
             duration = random.randint(3000, 5000)  # 3 to 5 seconds
         elif item_type == "normal":
             duration = 0  # No duration needed for normal fruit
-    
+        else:
+            duration = float("inf")
         # Random position on the grid based on screen size (Assuming 1280x720 and block_size=10)
         position = [random.randint(0, 127) * 10, random.randint(0, 71) * 10]  # Adjust based on actual screen size
     
@@ -64,4 +73,4 @@ class PowerUpOrDebuff:
 
     @staticmethod
     def get_item_type_list():
-        return ["speed_boost", "slow_down", "invincibility", "score_decrease", "normal"]
+        return ["speed_boost", "slow_down", "invincibility", "score_decrease","food_party", "normal"]
