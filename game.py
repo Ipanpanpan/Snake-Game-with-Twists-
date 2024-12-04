@@ -73,7 +73,9 @@ class Game:
         room5.add_door("right", (0, room5.height //2))
         room5.add_door("top", (room5.width // 2, room5.width))
         self.__map.add_room(room5 , (map_pos_x5, map_pos_y5))
-   
+
+        
+
     # Setters
     def set_block_size(self, block_size):
         self.__block_size = block_size
@@ -163,7 +165,8 @@ class Game:
 
         # Handle eating food
         for i, food in enumerate(self.__foods):
-            if food.get_position() == snake.get_head_position():
+            distance_from_food = np.linalg.norm(np.array(food.get_position()) - np.array(snake.get_head_position()))
+            if distance_from_food < self.__block_size / 2:
                 food.apply_effect(snake, self)  # Pass both snake and game
                 self.__foods.pop(i)
                 print(f"{snake.get_name()} consumed a {food.item_type} at {food.position}.")
@@ -276,3 +279,20 @@ class Game:
         block_size = self.__block_size
         return [np_random.randint(0, (width // block_size)) * block_size,
                 np_random.randint(0, (height // block_size)) * block_size]
+
+    def add_food_to_room(self, room_id):
+        room = self.__map.get_room(room_id)
+        if room.isoccupied:
+            return
+        food = PowerUpOrDebuff.spawn()
+        x, y = room.pos
+        rand_pos = room.get_random_position()
+        x, y = x + rand_pos[0] * self.get_block_size(), y + rand_pos[1] * self.get_block_size()
+        food.set_position((x // self.get_block_size() * self.get_block_size(), y// self.get_block_size() * self.get_block_size()))
+        self.__foods.append(food)
+
+    def add_food_randomly(self):
+        pos = self.get_random_position()
+        food = PowerUpOrDebuff.spawn()
+        food.set_position(pos)
+        self.__foods.append(food)

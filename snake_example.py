@@ -169,7 +169,20 @@ def game_loop():
                key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
                         "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
                color=(0, 255, 0), update_rate=15)  # Assign a color for Player 2
+    game_map = game.get_map()
 
+    food_per_room = 4
+    # Add food to each room except the center room
+    for room in game_map.rooms.values():
+        if room.get_id() == 2:
+            continue
+        for i in range(food_per_room):
+            game.add_food_to_room(room.get_id())
+
+    for i in range(10):
+        game.add_food_randomly()
+
+        
     game.add_snake(s1)
     game.add_snake(s2)
     

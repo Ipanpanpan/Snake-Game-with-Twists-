@@ -67,8 +67,8 @@ class PowerUpOrDebuff:
         """Spawn a random power-up or debuff."""
         # Define probabilities for each item type
         # Adjust probabilities as desired
-        item_types = ["speed_boost", "slow_down", "invincibility", "score_decrease", "food_party", "normal", "armor"]
-        probabilities = [0.25, 0, 0, 0.25, 0.25, 0, 0.25] 
+        item_types = ["normal", "speed_boost", "slow_down", "invincibility", "score_decrease", "food_party", "armor"]
+        probabilities = [0.5, 1/6, 1/6, 1/6, 1/6, 1/6, 1/6] 
 
         # Randomly choose an item type based on defined probabilities
         item_type = random.choices(item_types, weights=probabilities, k=1)[0]
