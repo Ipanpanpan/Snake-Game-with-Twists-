@@ -53,18 +53,41 @@ def draw_game_state(game: Game):
     for snake in game.get_snakes().values():
         # Determine snake color based on its state
         if snake.is_invincible():
-            # Flashing effect for invincibility
-            if (pygame.time.get_ticks() // 250) % 2 == 0:
-                snake_color = (0, 0, 0)  # Black
+            # Get current time and invincibility start time
+            current_time = pygame.time.get_ticks()
+            inv_start_time = snake.get_invincibility_start_time()
+            
+            # Safety check: inv_start_time should not be None
+            if inv_start_time is None:
+                print(f"Error: {snake.get_name()} is invincible but start time is not set.")
+                snake_color = snake.get_color()
             else:
-                snake_color = white  # White for flashing effect
+                elapsed_time = current_time - inv_start_time
+                
+                if elapsed_time < 2000:
+                    # Phase 1: Flashing every 250 ms for the first 2 seconds
+                    if (elapsed_time // 250) % 2 == 0:
+                        snake_color = (0, 0, 0)  # Black
+                    else:
+                        snake_color = white  # White for flashing effect
+                elif elapsed_time < 5000:
+                    # Phase 2: Solid black for the next 3 seconds
+                    snake_color = (0, 0, 0)  # Black
+                else:
+                    # Invincibility duration has ended; remove invincibility
+                    print(f"{snake.get_name()} invincibility duration ended.")
+                    snake.remove_invincibility()
+                    snake_color = snake.get_color()  # Revert to original color
         elif snake.is_slowed_down():
             snake_color = gray  # Indicate slow down
         else:
             snake_color = snake.get_color()
         
+        # Draw the snake's body
         for block in snake.get_body_segments():
             pygame.draw.rect(screen, snake_color, pygame.Rect(block[0], block[1], block_size, block_size))
+    
+    # Draw power-ups/debuffs
     for powerup in game.get_available_foods():
         if powerup.item_type == "speed_boost":
             pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Yellow for speed boost
@@ -76,8 +99,11 @@ def draw_game_state(game: Game):
             pygame.draw.rect(screen, (255, 192, 203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "normal":
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Red for normal fruit
+    
+    # Display scores
     score_display(game.get_scores())
     pygame.display.update()
+
 
 def game_loop():
     # Initial snake setup

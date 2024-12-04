@@ -7,7 +7,7 @@ import numpy as np
 
 class Game:
 
-    def __init__(self, screen_size, block_size, min_foods=4, fps=60):
+    def __init__(self, screen_size, block_size, min_foods=10, fps=60):
         self.__block_size = block_size  # block size in pixels
         self.__screen_size = screen_size  # (width, height)
 
@@ -155,15 +155,12 @@ class Game:
                 occupied_positions.extend(s.get_body_segments())
             else:
                 # Exclude the head to prevent self-collision detection on head position
-                occupied_positions.extend(s.get_body_segments()[1:])
+                occupied_positions.extend(s.get_body_segments()[1:])  # Exclude head
 
         if snake.get_head_position() in occupied_positions:
-            if not snake.is_invincible():
-                snake.kill()
-                print(f"{snake.get_name()} collided with another snake or its own body and is killed.")
-            else:
-                print(f"{snake.get_name()} collided while invincible and remains alive.")
-
+            snake.kill()
+            print(f"{snake.get_name()} collided with another snake or its own body and is killed.")
+            
     def update(self, events):
         # Check how many snakes are alive
         alive_snakes = [snake for snake in self.__snakes.values() if snake.is_alive()]

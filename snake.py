@@ -39,6 +39,7 @@ class Snake:
         self.__slow_down_end_time = None  # Initialize the slow down end time to None
         self.__is_invincible = False  # Initialize the invincibility state to False
         self.__invincibility_end_time = None  # Initialize the invincibility end time to None
+        self.__invincibility_start_time = None  # Initialize invincibility start time to None
         self.__score = 0
         self.__name = name
         self.__update_rate = update_rate
@@ -187,6 +188,9 @@ class Snake:
     def get_invincibility_end_time(self):
         return self.__invincibility_end_time
     
+    def get_invincibility_start_time(self):
+        return self.__invincibility_start_time
+    
     def get_food_stock(self):
         return self.__food_stock
     
@@ -224,6 +228,7 @@ class Snake:
         """Apply invincibility to the snake for a specified duration."""
         self.__is_invincible = True
         self.__invincibility_end_time = pygame.time.get_ticks() + duration
+        self.__invincibility_start_time = pygame.time.get_ticks()  # Store start time
         self.__original_color = self.__color  # Store original color to revert back later
         self.__color = (0, 0, 0)  # Change color to black
     
@@ -231,6 +236,7 @@ class Snake:
         """Remove invincibility after the duration expires."""
         self.__is_invincible = False
         self.__invincibility_end_time = None
+        self.__invincibility_start_time = None  # Reset start time
         self.__color = self.__original_color  # Revert to original color
 
     def score_debuff(self, score: int):
