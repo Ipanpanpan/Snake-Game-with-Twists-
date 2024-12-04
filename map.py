@@ -2,6 +2,7 @@ import numpy as np
 from typing import Tuple
 import pygame
 import sys
+import random
 
 class Map:
     id_type_map = {0 : "air", 1 : "wall"}
@@ -53,7 +54,6 @@ class Map:
         
 class Room:
     id_iter = 2
-    id_type_map = {0 : "air", 1 : "wall", 2 : "ceiling"}
     def __init__(self, width = 10, height = 10):
         self.id = Room.id_iter
         Room.id_iter += 1
@@ -70,9 +70,15 @@ class Room:
     def get_id(self):
         return self.id
     
+    def is_occupied(self):
+        return self.isoccupied
+    
     def add_door(self, side, interval : Tuple[int, int]):
         """add a door on the room"""
         self.doors[side] = interval
+    def get_random_position(self):
+        """get a random position in room"""
+        return random.randint(0, self.width - 1), random.randint(0, self.height - 1)
 
 
 class Pixel:

@@ -45,6 +45,37 @@ class Game:
         self.__map.add_room(room1, (map_pos_x, map_pos_y))       
 
 
+        room2 = Room(width // self.get_block_size() //4, height // self.get_block_size() //4)
+        map_pos_x2 = map_pos_x - (room2.get_width()//2) * self.get_block_size() 
+        map_pos_y2 = map_pos_y - (room2.get_height()//2) * self.get_block_size()
+        room2.add_door("right", (room2.height //2  , room2.height))
+        room2.add_door("bottom", (room2.width // 2  , room2.width))
+        self.__map.add_room(room2 , (map_pos_x2, map_pos_y2))
+
+
+        room3 = Room(width // self.get_block_size() //4, height // self.get_block_size() //4)
+        map_pos_x3 = map_pos_x + room1.width * self.get_block_size() - (room3.get_width()//2) * self.get_block_size() 
+        map_pos_y3 = map_pos_y + room1.height * self.get_block_size() - (room3.get_height()//2) * self.get_block_size()
+        room3.add_door("left", (0, room3.height //2))
+        room3.add_door("top", (0, room3.width // 2))
+        self.__map.add_room(room3 , (map_pos_x3, map_pos_y3))
+
+        room4 = Room(width // self.get_block_size() //4, height // self.get_block_size() //4)
+        map_pos_x4 = map_pos_x + room1.width * self.get_block_size() - (room4.get_width()//2) * self.get_block_size() 
+        map_pos_y4 = map_pos_y - (room4.get_height()//2) * self.get_block_size()
+        room4.add_door("left", (room4.height //2, room4.height))
+        room4.add_door("bottom", (0, room4.width // 2))
+        self.__map.add_room(room4 , (map_pos_x4, map_pos_y4))
+
+        room5 = Room(width // self.get_block_size() //4, height // self.get_block_size() //4)
+        map_pos_x5 = map_pos_x - (room5.get_width()//2) * self.get_block_size()
+        map_pos_y5 = map_pos_y + room1.height * self.get_block_size() - (room3.get_height()//2) * self.get_block_size()
+        room5.add_door("right", (0, room5.height //2))
+        room5.add_door("top", (room5.width // 2, room5.width))
+        self.__map.add_room(room5 , (map_pos_x5, map_pos_y5))
+
+        
+
     # Setters
     def set_block_size(self, block_size):
         self.__block_size = block_size
@@ -65,25 +96,8 @@ class Game:
         self.__snakes[snake.get_name()] = snake
     
     # Getters
-    def draw_map(self, screen):
-        """draw the map on the screen"""
-        screen.fill((0, 0, 0))
-        for room in self.__map.rooms.values():
-            pygame.draw.rect(screen, (100, 100, 100), pygame.Rect(room.pos[0], room.pos[1], room.get_width() * self.get_block_size(), room.get_height() * self.get_block_size()))
-            if room.isoccupied:
-                pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(room.pos[0] + self.get_block_size(), room.pos[1] + self.get_block_size(), 
-                                                                   (room.get_width() -2) * self.get_block_size(), (room.get_height() - 2) * self.get_block_size()))
-                room.isoccupied = False
-            for door in room.doors.items():
-                side, interval = door
-                if side == "top":
-                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + interval[0] * self.get_block_size(), room.pos[1], (interval[1] - interval[0]) * self.get_block_size(), self.get_block_size()))
-                elif side == "bottom":
-                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + interval[0] * self.get_block_size(), room.pos[1] + (room.get_height() - 1) * self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size(), self.get_block_size()))
-                elif side == "left":
-                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0], room.pos[1] + interval[0] * self.get_block_size(), self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size()))
-                elif side == "right":
-                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(room.pos[0] + (room.get_width() - 1) * self.get_block_size(), room.pos[1] + interval[0] * self.get_block_size(), self.get_block_size(), (interval[1] - interval[0]) * self.get_block_size()))
+    def get_map(self):
+        return self.__map
     def get_block_size(self):
         return self.__block_size
     
@@ -151,7 +165,8 @@ class Game:
 
         # Handle eating food
         for i, food in enumerate(self.__foods):
-            if food.get_position() == snake.get_head_position():
+            distance_from_food = np.linalg.norm(np.array(food.get_position()) - np.array(snake.get_head_position()))
+            if distance_from_food < self.__block_size / 2:
                 food.apply_effect(snake, self)  # Pass both snake and game
                 self.__foods.pop(i)
                 print(f"{snake.get_name()} consumed a {food.item_type} at {food.position}.")
@@ -264,3 +279,20 @@ class Game:
         block_size = self.__block_size
         return [np_random.randint(0, (width // block_size)) * block_size,
                 np_random.randint(0, (height // block_size)) * block_size]
+
+    def add_food_to_room(self, room_id):
+        room = self.__map.get_room(room_id)
+        if room.isoccupied:
+            return
+        food = PowerUpOrDebuff.spawn()
+        x, y = room.pos
+        rand_pos = room.get_random_position()
+        x, y = x + rand_pos[0] * self.get_block_size(), y + rand_pos[1] * self.get_block_size()
+        food.set_position((x // self.get_block_size() * self.get_block_size(), y// self.get_block_size() * self.get_block_size()))
+        self.__foods.append(food)
+
+    def add_food_randomly(self):
+        pos = self.get_random_position()
+        food = PowerUpOrDebuff.spawn()
+        food.set_position(pos)
+        self.__foods.append(food)
