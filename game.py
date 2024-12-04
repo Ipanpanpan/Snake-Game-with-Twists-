@@ -10,7 +10,7 @@ from map import Room
 
 class Game:
 
-    def __init__(self, screen_size, block_size, min_foods=4, fps=60):
+    def __init__(self, screen_size, block_size, min_foods=10, fps=60):
         self.__block_size = block_size  # block size in pixels
         self.__screen_size = screen_size  # (width, height)
 
@@ -126,6 +126,11 @@ class Game:
             snake.remove_invincibility()  # End invincibility after the duration expires
             print(f"{snake.get_name()} is no longer invincible.")
 
+        # Handle armor expiration
+        if snake.is_armor_active() and current_time > snake.get_armor_end_time():
+            snake.remove_armor()  # End armor after the duration expires
+            print(f"{snake.get_name()}'s armor has expired.")
+
         # Adjust snake's update rate based on effects
         if snake.is_slowed_down():
             # Dramatically slow down: halve the update rate, with a minimum of 1
@@ -147,8 +152,10 @@ class Game:
         # Handle eating food
         for i, food in enumerate(self.__foods):
             if food.get_position() == snake.get_head_position():
-                food.apply_effect(snake)
+                food.apply_effect(snake, self)  # Pass both snake and game
                 self.__foods.pop(i)
+                print(f"{snake.get_name()} consumed a {food.item_type} at {food.position}.")
+                break  # Only one food can be consumed at a time
 
         # Add food if below minimum
         if self.__min_foods > len(self.__foods):
@@ -157,6 +164,7 @@ class Game:
             while new_food.get_position() in [segment for s in self.__snakes.values() for segment in s.get_body_segments()] or new_food.get_position() in [food.get_position() for food in self.__foods]:
                 new_food = PowerUpOrDebuff.spawn()
             self.__foods.append(new_food)
+            print(f"Spawned new {new_food.item_type} at {new_food.position}.")
 
         # Movement logic
         frame_interval = self.__fps // snake.get_update_rate()
@@ -190,21 +198,28 @@ class Game:
         elif head_y >= height:
             snake.set_head_positions([head_x, 0])
 
-        # Check for collisions with other snakes and itself
-        occupied_positions = []
-        for s in self.__snakes.values():
-            if s != snake:
-                occupied_positions.extend(s.get_body_segments())
-            else:
-                # Exclude the head to prevent self-collision detection on head position
-                occupied_positions.extend(s.get_body_segments()[1:])
+        # **Self-Collision Check**
+        body_segments = snake.get_body_segments()[1:]  # Exclude head
+        head_position = snake.get_head_position()
+        if head_position in body_segments:
+            snake.kill()
+            print(f"{snake.get_name()} collided with itself and is killed.")
+            return  # Early exit since the snake is dead
 
-        if snake.get_head_position() in occupied_positions:
-            if not snake.is_invincible():
-                snake.kill()
-                print(f"{snake.get_name()} collided with another snake or its own body and is killed.")
-            else:
-                print(f"{snake.get_name()} collided while invincible and remains alive.")
+        # Check for collisions with other snakes and their armor blocks
+        occupied_positions = []
+        armor_positions = []
+        for s in self.__snakes.values():
+            if s != snake and s.is_alive():
+                occupied_positions.extend(s.get_body_segments())
+                armor_blocks = s.get_armor_positions()
+                armor_positions.extend(armor_blocks)
+
+        if head_position in occupied_positions or head_position in armor_positions:
+            snake.kill()
+        
+        # Increment frame counter
+        self.__frame_counter += 1
 
         #wall collision
         x_head = snake.get_head_position()[0] // self.get_block_size()
@@ -215,6 +230,7 @@ class Game:
         elif self.__map.pixels[y_head, x_head] != 0:
             room = self.__map.get_room(self.__map.pixels[y_head, x_head])
             room.isoccupied = True
+            
     def update(self, events):
         # Check how many snakes are alive
         alive_snakes = [snake for snake in self.__snakes.values() if snake.is_alive()]
