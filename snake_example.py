@@ -74,6 +74,8 @@ def draw_game_state(game: Game):
             pygame.draw.rect(screen, white, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # White for invincibility
         elif powerup.item_type == "score_decrease":
             pygame.draw.rect(screen, (255, 192, 203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
+        elif powerup.item_type == "food_party":
+            pygame.draw.rect(screen, green, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "normal":
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Red for normal fruit
     score_display(game.get_scores())

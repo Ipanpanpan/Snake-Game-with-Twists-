@@ -105,7 +105,7 @@ class Game:
         # Handle eating food
         for i, food in enumerate(self.__foods):
             if food.get_position() == snake.get_head_position():
-                food.apply_effect(snake)
+                food.apply_effect(snake, self)
                 self.__foods.pop(i)
 
         # Add food if below minimum
