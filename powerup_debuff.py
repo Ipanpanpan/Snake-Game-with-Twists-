@@ -17,6 +17,9 @@ class PowerUpOrDebuff:
     def get_position(self):
         return self.position
 
+    def set_position(self, new_position):
+        self.position = new_position
+        
     def apply_effect(self, snake, game):
         """Apply the effect to the snake."""
         print(f"Applying {self.item_type} to {snake.get_name()} for {self.duration} ms")  # Debug

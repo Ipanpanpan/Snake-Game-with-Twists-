@@ -51,10 +51,37 @@ def score_display(score):
 def draw_game_state(game: Game):
     """Draw the game state on the screen."""
     
+    
+    # Draw the map
+    game_map = game.get_map()
     screen.fill(black)
-    game.draw_map(screen)
+    # Draw rooms
+    wall_color = (77, 65, 41)
+    door_color = (161, 103, 80)
+    ceiling_color_not_occupied = (51, 43, 27)
+    ceiling_color_occupied = (171, 141, 97)
+    for room in game_map.rooms.values():
+        pygame.draw.rect(screen, wall_color, pygame.Rect(room.pos[0], room.pos[1], room.get_width() * game.get_block_size(), room.get_height() * game.get_block_size()))
+        if room.isoccupied:
+            pygame.draw.rect(screen, ceiling_color_occupied, pygame.Rect(room.pos[0] + game.get_block_size(), room.pos[1] + game.get_block_size(), 
+                                                                (room.get_width() -2) * game.get_block_size(), (room.get_height() - 2) * game.get_block_size()))
+        else:
+            pygame.draw.rect(screen, ceiling_color_not_occupied, pygame.Rect(room.pos[0] + game.get_block_size(), room.pos[1] + game.get_block_size(), 
+                                                                (room.get_width() -2) * game.get_block_size(), (room.get_height() - 2) * game.get_block_size()))
+        # Draw doors
+        
+        for door in room.doors.items():
+            side, interval = door
+            if side == "top":
+                pygame.draw.rect(screen, door_color, pygame.Rect(room.pos[0] + interval[0] * game.get_block_size(), room.pos[1], (interval[1] - interval[0]) * game.get_block_size(), game.get_block_size()))
+            elif side == "bottom":
+                pygame.draw.rect(screen, door_color, pygame.Rect(room.pos[0] + interval[0] * game.get_block_size(), room.pos[1] + (room.get_height() - 1) * game.get_block_size(), (interval[1] - interval[0]) * game.get_block_size(), game.get_block_size()))
+            elif side == "left":
+                pygame.draw.rect(screen, door_color, pygame.Rect(room.pos[0], room.pos[1] + interval[0] * game.get_block_size(), game.get_block_size(), (interval[1] - interval[0]) * game.get_block_size()))
+            elif side == "right":
+                pygame.draw.rect(screen, door_color, pygame.Rect(room.pos[0] + (room.get_width() - 1) * game.get_block_size(), room.pos[1] + interval[0] * game.get_block_size(), game.get_block_size(), (interval[1] - interval[0]) * game.get_block_size()))
 
-
+    # Draw the snakes
     for snake in game.get_snakes().values():
         # Determine snake color based on its state
         if snake.is_invincible():
@@ -99,6 +126,15 @@ def draw_game_state(game: Game):
     
     # Draw power-ups/debuffs
     for powerup in game.get_available_foods():
+        pixels = game_map.get_pixels()
+
+        if pixels[powerup.get_position()[1] // block_size, powerup.get_position()[0] // block_size] == 1:
+            powerup.set_position((powerup.get_position()[0] // block_size + 1, powerup.get_position()[1] // block_size + 1))
+            
+        if (pixels[powerup.get_position()[1] // block_size, powerup.get_position()[0] // block_size] >=2 and 
+            game_map.get_room(pixels[powerup.get_position()[1] // block_size, powerup.get_position()[0] // block_size]).is_occupied() == False):
+            continue
+
         if powerup.item_type == "speed_boost":
             pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Yellow for speed boost
         elif powerup.item_type == "slow_down":
@@ -113,7 +149,9 @@ def draw_game_state(game: Game):
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Red for normal fruit
         elif powerup.item_type == "armor":
             pygame.draw.rect(screen, (156,81,0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # brown for armor fruit
-    
+
+    for room in game_map.rooms.values():
+        room.isoccupied = False
     # Display scores
     score_display(game.get_scores())
     pygame.display.update()
@@ -127,7 +165,7 @@ def game_loop():
                key_map={"UP": pygame.K_w, "DOWN": pygame.K_s, 
                         "LEFT": pygame.K_a, "RIGHT": pygame.K_d},
                color=(0, 0, 255), update_rate=15)  # Adjusted to default
-    s2 = Snake([[1000, 1000], [1000, 1050]], name="Player 2",
+    s2 = Snake([[1000, 680], [1050, 680]], name="Player 2",
                key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
                         "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
                color=(0, 255, 0), update_rate=15)  # Assign a color for Player 2

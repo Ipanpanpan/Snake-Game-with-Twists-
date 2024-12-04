@@ -53,7 +53,6 @@ class Map:
         
 class Room:
     id_iter = 2
-    id_type_map = {0 : "air", 1 : "wall", 2 : "ceiling"}
     def __init__(self, width = 10, height = 10):
         self.id = Room.id_iter
         Room.id_iter += 1
@@ -69,6 +68,9 @@ class Room:
         return self.height
     def get_id(self):
         return self.id
+    
+    def is_occupied(self):
+        return self.isoccupied
     
     def add_door(self, side, interval : Tuple[int, int]):
         """add a door on the room"""
