@@ -14,9 +14,9 @@ def get_font(size): # Returns Press-Start-2P in the desired size
     return pygame.font.Font("Assets\EatingPasta-pgxXZ.ttf", size)
 
 # Load music
-menu_music = "Assets\Bouncy.mp3"  # Replace with your actual menu music file
-game_music = "Assets\Tetris.mp3"  # Replace with your actual game music file
-time_music = "Assets\Mario.mp3"
+menu_music = "Assets\\Bouncy.mp3"  
+game_music = "Assets\\Tetris.mp3" 
+time_music = "Assets\\Mario.mp3"
 
 # Game states
 MENU = "menu"
@@ -32,12 +32,11 @@ def play_music(file):
     pygame.mixer.music.play(-1)  # Loop music
 
 # Play menu music initially
-play_music(menu_music)
+
 
 def play():
     while True:
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
-
         SCREEN.blit(pygame.image.load("Assets\\time_limit2.png"), (0, 0))
 
         three_minute = Button(image=None, pos=(750, 90), 
@@ -60,13 +59,13 @@ def play():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if three_minute.checkForInput(PLAY_MOUSE_POS):
                     play_music(game_music)
-                    s.game_loop() # add time
+                    s.game_loop(4)
                 if twonahalf_minute.checkForInput(PLAY_MOUSE_POS):
                     play_music(game_music)
-                    s.game_loop() # add time
+                    s.game_loop(2) # add time
                 if thirty_sec.checkForInput(PLAY_MOUSE_POS):
                     play_music(game_music)
-                    s.game_loop() # add time
+                    s.game_loop(3) # add time
 
         pygame.display.update()
 
@@ -214,15 +213,18 @@ def gamemode():
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if solo.checkForInput(TUTOR_MOUSE_POS):
-                        sys.exit()
+                        play_music(game_music)
+                        s.game_loop(1, False)
                     if deathmatch.checkForInput(TUTOR_MOUSE_POS):
-                        tutorial4()
+                        play_music(game_music)
+                        s.game_loop(1)
                     if time_atk.checkForInput(TUTOR_MOUSE_POS):
                         play()
 
             pygame.display.update()
 
 def p1_wins():
+        play_music(menu_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\p1_wins.png"), (0, 0))
@@ -237,13 +239,15 @@ def p1_wins():
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if back_menu.checkForInput(MOUSE_POS):
+                        play_music(menu_music)
                         main_menu()
                     if exit_game.checkForInput(MOUSE_POS):
                         sys.exit()
-
+            
             pygame.display.update()
 
 def p2_wins():
+        play_music(menu_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\p2_wins.png"), (0, 0))
@@ -258,6 +262,7 @@ def p2_wins():
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if back_menu.checkForInput(MOUSE_POS):
+                        play_music(menu_music)
                         main_menu()
                     if exit_game.checkForInput(MOUSE_POS):
                         sys.exit()
@@ -265,6 +270,7 @@ def p2_wins():
             pygame.display.update()
 
 def draw():
+        play_music(menu_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\draw.png"), (0, 0))
@@ -279,6 +285,7 @@ def draw():
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if back_menu.checkForInput(MOUSE_POS):
+                        play_music(menu_music)
                         main_menu()
                     if exit_game.checkForInput(MOUSE_POS):
                         sys.exit()
@@ -287,6 +294,7 @@ def draw():
 
 
 def main_menu():
+    play_music(menu_music)
     while True:
         SCREEN.blit(BG, (0, 0))
 

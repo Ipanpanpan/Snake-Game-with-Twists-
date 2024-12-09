@@ -16,13 +16,13 @@ class Map:
     def draw_hollow_rect(self,value,  left_top : Tuple[int, int], right_bot : Tuple[int, int]):
         """draw a hollow rectangle on the map"""
         self.pixels[left_top[1], left_top[0] : right_bot[0]] = value
-        self.pixels[right_bot[1], left_top[0] : right_bot[0]] = value
+        self.pixels[right_bot[1] - 1, left_top[0] : right_bot[0]] = value
         self.pixels[left_top[1] : right_bot[1], left_top[0]] = value
-        self.pixels[left_top[1] : right_bot[1], right_bot[0]] = value
+        self.pixels[left_top[1] : right_bot[1], right_bot[0] - 1] = value
 
     def draw_filled_rect(self, value, left_top : Tuple[int, int], right_bot : Tuple[int, int]):
         """draw a filled rectangle on the map"""
-        self.pixels[left_top[1] : right_bot[1] + 1, left_top[0] : right_bot[0] + 1] = value
+        self.pixels[left_top[1] : right_bot[1], left_top[0] : right_bot[0]] = value
 
     def add_room(self, room : "Room", left_top_pos : Tuple[int, int]):
         """draw a room on the map"""
@@ -36,11 +36,11 @@ class Map:
             if side == "left":
                 self.pixels[coor_left_top[1] + interval[0] : coor_left_top[1] + interval[1], coor_left_top[0]] = 0
             elif side =="right":
-                self.pixels[coor_left_top[1] + interval[0] : coor_left_top[1] + interval[1], coor_right_bot[0]] = 0
+                self.pixels[coor_left_top[1] + interval[0] : coor_left_top[1] + interval[1], coor_right_bot[0] - 1] = 0
             elif side == "top":
                 self.pixels[coor_left_top[1] : coor_left_top[1] + 1, coor_left_top[0] + interval[0] :coor_left_top[0] +  interval[1]] = 0
             elif side == "bottom":
-                self.pixels[coor_right_bot[1], coor_left_top[0] + interval[0] :coor_left_top[0] +  interval[1]] = 0
+                self.pixels[coor_right_bot[1] - 1, coor_left_top[0] + interval[0] :coor_left_top[0] +  interval[1]] = 0
     # Getters
     def get_room(self, room_id):
         """get a room by id"""

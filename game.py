@@ -10,7 +10,7 @@ from map import Room
 
 class Game:
 
-    def __init__(self, screen_size, block_size, min_foods=10, fps=60, time_option=1):
+    def __init__(self, screen_size, block_size, min_foods=10, fps=60, time_option=1, default_snake_speed = 15):
         self.__block_size = block_size  # block size in pixels
         self.__screen_size = screen_size  # (width, height)
 
@@ -27,6 +27,8 @@ class Game:
 
         self.__frame_counter = 0
         Snake.__block_size = block_size
+        self.__winner : str= None
+        self.__default_snake_speed = default_snake_speed
 
         # Timer-related attributes
         self.time_option = time_option
@@ -46,7 +48,10 @@ class Game:
         else:
             print("Invalid time option selected. No time limit will be set.")
             return None
-        
+    
+    def get_winner(self):
+        return self.__winner
+
     def get_remaining_time(self):
         """Calculate and return the remaining time in seconds."""
         if self.time_limit is None:
@@ -105,6 +110,9 @@ class Game:
         
 
     # Setters
+    def set_default_snake_speed(self, speed):
+        self.__default_snake_speed = speed
+
     def set_block_size(self, block_size):
         self.__block_size = block_size
     
@@ -181,7 +189,7 @@ class Game:
             print(f"{snake.get_name()} is slowed down. Update rate set to {slow_down_update_rate}.")
         else:
             # Reset to default update rate if not slowed down
-            default_update_rate = 15  # Adjust as per your game's default
+            default_update_rate = self.__default_snake_speed  # Adjust as per your game's default
             snake.set_update_rate(default_update_rate)
             print(f"{snake.get_name()}'s update rate reset to {default_update_rate}.")
 
@@ -289,29 +297,35 @@ class Game:
             if len(alive_snakes) >=1:
                 alive_snake :Snake = alive_snakes[0]
                 dead_snake : Snake = dead_snakes[0]
-                if alive_snake.get_head_position() == dead_snake.get_head_position():
+                if (abs(alive_snake.get_head_position()[0]- dead_snake.get_head_position()[0]) < Snake.__block_size / 2 and 
+                    abs(alive_snake.get_head_position()[1]- dead_snake.get_head_position()[1]) < Snake.__block_size / 2) :
                     if dead_snake.get_direction() == "RIGHT" and alive_snake.get_direction() == "LEFT":
                         alive_snake.kill()
+                        alive_snakes.pop()
                     elif dead_snake.get_direction() == "LEFT" and alive_snake.get_direction() == "RIGHT":
                         alive_snake.kill()
+                        alive_snakes.pop()
                     elif dead_snake.get_direction() == "UP" and alive_snake.get_direction() == "DOWN":
                         alive_snake.kill()
+                        alive_snakes.pop()
                     elif dead_snake.get_direction() == "DOWN" and alive_snake.get_direction() == "UP":
                         alive_snake.kill()
+                        alive_snakes.pop()
+
                     
 
-            if len(alive_snakes) >= 1:
-                scores = self.get_scores()
-                max_score = max(scores.values())
-                winners = [name for name, score in scores.items() if score == max_score]
-                if len(winners) == 1:
-                    winner = winners[0]
-                    message_text = f"{winner} wins the game!"
-                else:
-                    winner = ", ".join(winners)
-                    message_text = f"It's a tie between: {winner} with {max_score} points each!"
+            if len(alive_snakes) >=1:
+                self.__winner = alive_snakes[0].get_name()
+                # scores = self.get_scores()
+                # max_score = max(scores.values())
+                # winners = [name for name, score in scores.items() if score == max_score]
+                
+                    # winner = winners[0]
+                    # message_text = f"{winner} wins the game!"
             else:
-                message_text = "All snakes have been killed. No winners!"
+                self.__winner = "draw"
+                # winner = ", ".join(winners)
+                # message_text = f"It's a tie between: {winner} with {max_score} points each!"
 
             # Handle game over messaging as needed
 
@@ -325,21 +339,23 @@ class Game:
                 max_score = max(scores.values())
                 winners = [name for name, score in scores.items() if score == max_score]
                 if len(winners) == 1:
-                    print(f"Time's up! {winners[0]} wins the game with {max_score} points!")
+                    # print(f"Time's up! {winners[0]} wins the game with {max_score} points!")
+                    self.__winner = winners[0]
                 else:
-                    print(f"Time's up! It's a tie between: {', '.join(winners)} with {max_score} points each!")
+                    # print(f"Time's up! It's a tie between: {', '.join(winners)} with {max_score} points each!")
+                    self.__winner = "draw"
                 return
 
-        else:
-            # Existing game over condition based on snakes' lives
-            if len(alive_snakes) <= 1:
-                # Game over if one or zero snakes are alive
-                self.__is_game_over = True
-                if len(alive_snakes) == 1:
-                    winner = alive_snakes[0].get_name()
-                    print(f"{winner} wins the game!")
-            else:
-                self.__is_game_over = False
+        # else:
+        #     # Existing game over condition based on snakes' lives
+        #     if len(alive_snakes) <= 1:
+        #         # Game over if one or zero snakes are alive
+        #         self.__is_game_over = True
+        #         if len(alive_snakes) == 1:
+        #             winner = alive_snakes[0].get_name()
+        #             print(f"{winner} wins the game!")
+        #     else:
+        #         self.__is_game_over = False
 
         if not self.__is_game_over:
             for snake in alive_snakes:
