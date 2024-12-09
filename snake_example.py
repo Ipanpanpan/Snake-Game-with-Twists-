@@ -5,6 +5,7 @@ from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
 from game import Game
 from map import Map, Room, Pixel
+import Snake_UI as s
 
 # Initialize pygame
 pygame.init()
@@ -211,27 +212,25 @@ def game_loop():
         clock.tick(game.get_fps())
     
     # After game over, display winner and close the game
+    
     alive_snakes = [snake for snake in game.get_snakes().values() if snake.is_alive()]
     if len(alive_snakes) == 1:
-        winner = alive_snakes[0].get_name()
-        print(f"{winner} wins the game!")
-        # Display winner on the screen for a short duration before closing
         screen.fill(black)
-        message(f"{winner} wins the game!", green, width // 3, height // 2)
-        pygame.display.update()
-        pygame.time.delay(3)  # Display for 3 seconds
+        winner = alive_snakes[0].get_name()
+        if winner == "Player 1":
+            print(f"{winner} wins the game!")
+            s.p1_wins()
+        elif winner == "Player 2":
+            print(f"{winner} wins the game!")
+            message(f"{winner} wins the game!", green, width // 3, height // 2)
+            message("kontol",blue, width // 4, height // 2)
+            s.p2_wins()
     else:
         print("No winners. All snakes are dead.")
-        # Optionally, display a tie message
-        screen.fill(black)
-        message("No winners. All snakes are dead.", red, width // 3, height // 2)
-        pygame.display.update()
-        pygame.time.delay(3)  # Display for 3 seconds
-    
-    pygame.quit()
-    quit()
-
+        s.draw()
+    # import Snake_UI as s
+    # s.main_menu()
 # Run the game
 if __name__ == "__main__":
-    game_loop()
+    s.main_menu()
 
