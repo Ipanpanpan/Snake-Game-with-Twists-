@@ -278,8 +278,45 @@ class Game:
         # Check how many snakes are alive
         alive_snakes = [snake for snake in self.__snakes.values() if snake.is_alive()]
 
-        # Handle time-based game over
-        if self.time_limit is not None:
+        # Check if any snake has died
+        total_snakes = len(self.__snakes)
+        if len(alive_snakes) < total_snakes:
+            # At least one snake has died
+            self.__is_game_over = True
+            dead_snakes = [snake for snake in self.__snakes.values() if not snake.is_alive()]
+            print("A snake has been killed due to collision. Ending game.")
+
+            if len(alive_snakes) >=1:
+                alive_snake :Snake = alive_snakes[0]
+                dead_snake : Snake = dead_snakes[0]
+                if alive_snake.get_head_position() == dead_snake.get_head_position():
+                    if dead_snake.get_direction() == "RIGHT" and alive_snake.get_direction() == "LEFT":
+                        alive_snake.kill()
+                    elif dead_snake.get_direction() == "LEFT" and alive_snake.get_direction() == "RIGHT":
+                        alive_snake.kill()
+                    elif dead_snake.get_direction() == "UP" and alive_snake.get_direction() == "DOWN":
+                        alive_snake.kill()
+                    elif dead_snake.get_direction() == "DOWN" and alive_snake.get_direction() == "UP":
+                        alive_snake.kill()
+                    
+
+            if len(alive_snakes) >= 1:
+                scores = self.get_scores()
+                max_score = max(scores.values())
+                winners = [name for name, score in scores.items() if score == max_score]
+                if len(winners) == 1:
+                    winner = winners[0]
+                    message_text = f"{winner} wins the game!"
+                else:
+                    winner = ", ".join(winners)
+                    message_text = f"It's a tie between: {winner} with {max_score} points each!"
+            else:
+                message_text = "All snakes have been killed. No winners!"
+
+            # Handle game over messaging as needed
+
+        # Handle time-based game over only if no snakes have died
+        elif self.time_limit is not None:
             remaining_time = self.get_remaining_time()
             if remaining_time <= 0:
                 # Time is up; determine winner by scores
@@ -292,6 +329,7 @@ class Game:
                 else:
                     print(f"Time's up! It's a tie between: {', '.join(winners)} with {max_score} points each!")
                 return
+
         else:
             # Existing game over condition based on snakes' lives
             if len(alive_snakes) <= 1:
@@ -316,7 +354,7 @@ class Game:
                         elif event.key == snake.get_key_map()['RIGHT']:
                             snake.set_direction('RIGHT')
                 self.update_snake(snake)
-        
+
         self.__frame_counter += 1
 
     def get_random_position(self):

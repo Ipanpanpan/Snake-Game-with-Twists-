@@ -277,6 +277,6 @@ if __name__ == "__main__":
     # 2 - 30 seconds
     # 3 - 2.5 minutes
     # 4 - 3 minutes
-    desired_time_option = 2  # Example: Set to 2 for 30 seconds
+    desired_time_option = 1
 
     game_loop(time_option=desired_time_option)
