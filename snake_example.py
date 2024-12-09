@@ -1,3 +1,5 @@
+# snake_example.py
+
 import pygame
 import time
 import random
@@ -52,12 +54,14 @@ def score_display(score):
 def draw_game_state(game: Game):
     """Draw the game state on the screen."""
     
-    
     # Draw the map
     game_map = game.get_map()
-    background_image = pygame.image.load("Assets\game_bg(2).png").convert_alpha() # Load your image
-    screen.blit(background_image, (0, 0))
-    #screen.fill((0,0,0))
+    try:
+        background_image = pygame.image.load("Assets/game_bg(2).png").convert_alpha()  # Corrected path separator
+        screen.blit(background_image, (0, 0))
+    except pygame.error as e:
+        print(f"Error loading background image: {e}")
+        screen.fill((0,0,0))  # Fallback to black if image fails to load
 
     # Draw rooms
     wall_color = (77, 65, 41)
@@ -149,31 +153,49 @@ def draw_game_state(game: Game):
         elif powerup.item_type == "score_decrease":
             pygame.draw.rect(screen, (255,192,203), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
         elif powerup.item_type == "food_party":
-            pygame.draw.rect(screen, green, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Pink for score decrease
+            pygame.draw.rect(screen, green, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Green for food party
         elif powerup.item_type == "normal":
             pygame.draw.rect(screen, red, pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Red for normal fruit
         elif powerup.item_type == "armor":
-            pygame.draw.rect(screen, (156,81,0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # brown for armor fruit
+            pygame.draw.rect(screen, (156,81,0), pygame.Rect(powerup.position[0], powerup.position[1], block_size, block_size))  # Brown for armor fruit
 
     for room in game_map.rooms.values():
         room.isoccupied = False
+
     # Display scores
     score_display(game.get_scores())
+
+    # Display remaining time if applicable
+    if game.time_limit is not None:
+        remaining_time = game.get_remaining_time()
+        time_text = "Time Left: " + time_format(remaining_time)
+        time_surface = score_font.render(time_text, True, white)
+        screen.blit(time_surface, [width -300, 10])  # Position it at the top-right corner
+        print(f"Rendering Timer: {time_text}")  # Debugging statement
+
     pygame.display.update()
 
+def time_format(seconds):
+    """Format time in seconds to MM:SS format."""
+    if seconds is None:
+        return "Infinite"
+    minutes = int(seconds) // 60
+    secs = int(seconds) % 60
+    return f"{minutes:02}:{secs:02}"
 
-def game_loop():
+
+def game_loop(time_option=1):
     # Initial snake setup
-    game = Game(screen_size=(width, height), block_size=block_size)
+    game = Game(screen_size=(width, height), block_size=block_size, time_option=time_option)
 
     s1 = Snake([[100, 50], [50, 50]], name="Player 1",
                key_map={"UP": pygame.K_w, "DOWN": pygame.K_s, 
                         "LEFT": pygame.K_a, "RIGHT": pygame.K_d},
-               color=(0, 0, 255), update_rate=15)  # Adjusted to default
+               color=(0, 0, 255), update_rate=15)  # Player 1: Blue
     s2 = Snake([[1000, 680], [1050, 680]], name="Player 2",
                key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
                         "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
-               color=(0, 255, 0), update_rate=15)  # Assign a color for Player 2
+               color=(0, 255, 0), update_rate=15)  # Player 2: Green
     game_map = game.get_map()
 
     food_per_room = 4
@@ -181,16 +203,17 @@ def game_loop():
     for room in game_map.rooms.values():
         if room.get_id() == 2:
             continue
-        for i in range(food_per_room):
+        for _ in range(food_per_room):
             game.add_food_to_room(room.get_id())
 
-    for i in range(10):
+    for _ in range(10):
         game.add_food_randomly()
 
-        
+    # Add snakes to the game
     game.add_snake(s1)
     game.add_snake(s2)
     
+    # Main game loop
     while not game.is_game_over():
         # Event handling (moving snake, quitting the game, etc.)
         events = pygame.event.get()
@@ -207,31 +230,53 @@ def game_loop():
         game.update(events)
         draw_game_state(game)
 
-        # Removed tick_speed logic as it's no longer needed
+        # Control the frame rate
         clock.tick(game.get_fps())
     
-    # After game over, display winner and close the game
+    # Handle game over
     alive_snakes = [snake for snake in game.get_snakes().values() if snake.is_alive()]
-    if len(alive_snakes) == 1:
-        winner = alive_snakes[0].get_name()
-        print(f"{winner} wins the game!")
-        # Display winner on the screen for a short duration before closing
-        screen.fill(black)
-        message(f"{winner} wins the game!", green, width // 3, height // 2)
-        pygame.display.update()
-        pygame.time.delay(3)  # Display for 3 seconds
+
+    if game.time_limit is not None:
+        # Game ended due to time limit
+        scores = game.get_scores()
+        max_score = max(scores.values())
+        winners = [name for name, score in scores.items() if score == max_score]
+        if len(winners) == 1:
+            winner = winners[0]
+            message_text = f"Time's up! {winner} wins with {scores[winner]} points!"
+            message_color = green
+        else:
+            winner = ", ".join(winners)
+            message_text = f"Time's up! It's a tie between: {winner} with {max_score} points each!"
+            message_color = green
     else:
-        print("No winners. All snakes are dead.")
-        # Optionally, display a tie message
-        screen.fill(black)
-        message("No winners. All snakes are dead.", red, width // 3, height // 2)
-        pygame.display.update()
-        pygame.time.delay(3)  # Display for 3 seconds
+        # Game ended due to snakes' lives
+        if len(alive_snakes) == 1:
+            winner = alive_snakes[0].get_name()
+            message_text = f"{winner} wins the game!"
+            message_color = green
+        else:
+            message_text = "No winners. All snakes are dead."
+            message_color = red
+    
+    print(message_text)
+    # Display winner on the screen for a short duration before closing
+    screen.fill(black)
+    message(message_text, message_color, width // 3, height // 2)
+    pygame.display.update()
+    pygame.time.delay(2000)  # Display for 2 seconds
     
     pygame.quit()
     quit()
 
 # Run the game
 if __name__ == "__main__":
-    game_loop()
+    # Set the desired time_option here
+    # Options:
+    # 1 - No time limit
+    # 2 - 30 seconds
+    # 3 - 2.5 minutes
+    # 4 - 3 minutes
+    desired_time_option = 2  # Example: Set to 2 for 30 seconds
 
+    game_loop(time_option=desired_time_option)
