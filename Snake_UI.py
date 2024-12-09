@@ -222,6 +222,69 @@ def gamemode():
 
             pygame.display.update()
 
+def p1_wins():
+        while True:
+            MOUSE_POS = pygame.mouse.get_pos()
+            SCREEN.blit(pygame.image.load("Assets\\p1_wins.png"), (0, 0))
+            back_menu = Button(image=None, pos=(300, 360), text_input="BACK TO MENU", font=get_font(80), base_color="#2c3455", hovering_color="#81c3ff")
+            back_menu.changeColor(MOUSE_POS)
+            back_menu.update(SCREEN)
+
+            exit_game = Button(image=None, pos=(230, 530), text_input="EXIT GAME", font=get_font(80), base_color="#2c3455", hovering_color="#81c3ff")
+            exit_game.changeColor(MOUSE_POS)
+            exit_game.update(SCREEN)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if back_menu.checkForInput(MOUSE_POS):
+                        main_menu()
+                    if exit_game.checkForInput(MOUSE_POS):
+                        sys.exit()
+
+            pygame.display.update()
+
+def p2_wins():
+        while True:
+            MOUSE_POS = pygame.mouse.get_pos()
+            SCREEN.blit(pygame.image.load("Assets\\p2_wins.png"), (0, 0))
+            back_menu = Button(image=None, pos=(300, 360), text_input="BACK TO MENU", font=get_font(80), base_color="#2c3455", hovering_color="#72921f")
+            back_menu.changeColor(MOUSE_POS)
+            back_menu.update(SCREEN)
+
+            exit_game = Button(image=None, pos=(230, 530), text_input="EXIT GAME", font=get_font(80), base_color="#2c3455", hovering_color="#72921f")
+            exit_game.changeColor(MOUSE_POS)
+            exit_game.update(SCREEN)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if back_menu.checkForInput(MOUSE_POS):
+                        main_menu()
+                    if exit_game.checkForInput(MOUSE_POS):
+                        sys.exit()
+
+            pygame.display.update()
+
+def draw():
+        while True:
+            MOUSE_POS = pygame.mouse.get_pos()
+            SCREEN.blit(pygame.image.load("Assets\\draw.png"), (0, 0))
+            back_menu = Button(image=None, pos=(300, 360), text_input="BACK TO MENU", font=get_font(80), base_color="#2c3455", hovering_color="purple")
+            back_menu.changeColor(MOUSE_POS)
+            back_menu.update(SCREEN)
+
+            exit_game = Button(image=None, pos=(230, 530), text_input="EXIT GAME", font=get_font(80), base_color="#2c3455", hovering_color="purple")
+            exit_game.changeColor(MOUSE_POS)
+            exit_game.update(SCREEN)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if back_menu.checkForInput(MOUSE_POS):
+                        main_menu()
+                    if exit_game.checkForInput(MOUSE_POS):
+                        sys.exit()
+
+            pygame.display.update()
+
 
 def main_menu():
     while True:
@@ -251,5 +314,3 @@ def main_menu():
                     sys.exit()
 
         pygame.display.update()
-
-main_menu()

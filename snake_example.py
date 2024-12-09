@@ -7,6 +7,7 @@ from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
 from game import Game
 from map import Map, Room, Pixel
+import Snake_UI as s
 
 # Initialize pygame
 pygame.init()
