@@ -7,6 +7,7 @@ from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
 from game import Game
 from map import Map, Room, Pixel
+import Snake_UI as s
 
 # Initialize pygame
 pygame.init()
@@ -233,6 +234,7 @@ def game_loop(time_option=1):
         # Control the frame rate
         clock.tick(game.get_fps())
     
+
     # Handle game over
     alive_snakes = [snake for snake in game.get_snakes().values() if snake.is_alive()]
 
@@ -278,5 +280,3 @@ if __name__ == "__main__":
     # 3 - 2.5 minutes
     # 4 - 3 minutes
     desired_time_option = 2  # Example: Set to 2 for 30 seconds
-
-    game_loop(time_option=desired_time_option)
