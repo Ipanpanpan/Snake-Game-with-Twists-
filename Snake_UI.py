@@ -85,7 +85,7 @@ def ask_tutorial():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if next_page.checkForInput(TUTOR_MOUSE_POS):
-                    play()
+                    gamemode()
                 if back_page.checkForInput(TUTOR_MOUSE_POS):
                     tutorial1()
         pygame.display.update()
@@ -189,11 +189,39 @@ def tutorial5():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if next_page.checkForInput(TUTOR_MOUSE_POS):
-                    play()
+                    gamemode()
                 if back_page.checkForInput(TUTOR_MOUSE_POS):
                     tutorial4()
 
         pygame.display.update()
+
+def gamemode():
+        while True:
+            TUTOR_MOUSE_POS = pygame.mouse.get_pos()
+            SCREEN.blit(pygame.image.load("Assets\\gamemode_select.png"), (0, 0))
+            solo = Button(image=None, pos=(170, 640), text_input="SOLO", font=get_font(130), base_color="white", hovering_color="#81c3ff")
+            solo.changeColor(TUTOR_MOUSE_POS)
+            solo.update(SCREEN)
+
+            deathmatch = Button(image=None, pos=(920, 430), text_input="DEATHMATCH", font=get_font(120), base_color="white", hovering_color="#f9e694")
+            deathmatch.changeColor(TUTOR_MOUSE_POS)
+            deathmatch.update(SCREEN)
+
+            time_atk = Button(image=None, pos=(360, 220), text_input="TIME ATTACK", font=get_font(120), base_color="white", hovering_color="#ffc0cb")
+            time_atk.changeColor(TUTOR_MOUSE_POS)
+            time_atk.update(SCREEN)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if solo.checkForInput(TUTOR_MOUSE_POS):
+                        sys.exit()
+                    if deathmatch.checkForInput(TUTOR_MOUSE_POS):
+                        tutorial4()
+                    if time_atk.checkForInput(TUTOR_MOUSE_POS):
+                        play()
+
+            pygame.display.update()
+
 
 def main_menu():
     while True:
