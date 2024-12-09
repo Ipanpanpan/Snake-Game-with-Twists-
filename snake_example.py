@@ -185,18 +185,34 @@ def time_format(seconds):
     return f"{minutes:02}:{secs:02}"
 
 
-def game_loop(time_option=1):
+def game_loop(time_option=1, multiplayer = True):
     # Initial snake setup
     game = Game(screen_size=(width, height), block_size=block_size, time_option=time_option)
 
-    s1 = Snake([[100, 50], [50, 50]], name="Player 1",
+    
+    
+    if multiplayer:
+        s1 = Snake([[100, 50], [50, 50]], name="Player 1",
                key_map={"UP": pygame.K_w, "DOWN": pygame.K_s, 
                         "LEFT": pygame.K_a, "RIGHT": pygame.K_d},
                color=(0, 0, 255), update_rate=15)  # Player 1: Blue
-    s2 = Snake([[1000, 680], [1050, 680]], name="Player 2",
-               key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
-                        "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
-               color=(0, 255, 0), update_rate=15)  # Player 2: Green
+        # Add snakes to the game
+        
+
+        s2 = Snake([[1000, 680], [1050, 680]], name="Player 2",
+                key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
+                            "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
+                color=(0, 255, 0), update_rate=15)  # Player 2: Green
+        game.add_snake(s1)
+        game.add_snake(s2)
+
+    else:
+        game.set_default_snake_speed(7.5)
+        s1 = Snake([[1000, 680], [1050, 680]], name="Player 1",
+                key_map={"UP": pygame.K_UP, "DOWN": pygame.K_DOWN, 
+                            "LEFT": pygame.K_LEFT, "RIGHT": pygame.K_RIGHT},
+                color=(0, 0, 255), update_rate=7.5)  # Player 1: Blue
+        game.add_snake(s1)
     game_map = game.get_map()
 
     food_per_room = 4
@@ -210,9 +226,7 @@ def game_loop(time_option=1):
     for _ in range(10):
         game.add_food_randomly()
 
-    # Add snakes to the game
-    game.add_snake(s1)
-    game.add_snake(s2)
+    
     
     # Main game loop
     while not game.is_game_over():
@@ -260,15 +274,28 @@ def game_loop(time_option=1):
             message_text = "No winners. All snakes are dead."
             message_color = red
     
-    print(message_text)
-    # Display winner on the screen for a short duration before closing
-    screen.fill(black)
-    message(message_text, message_color, width // 3, height // 2)
-    pygame.display.update()
-    pygame.time.delay(2000)  # Display for 2 seconds
+    if not multiplayer:
+        s.p1_wins()
+
+    winner = game.get_winner()
+
+    if winner == "Player 1":
+        s.p1_wins()
+    elif winner == "Player 2":
+        s.p2_wins()
+    elif winner == "draw":
+        print("HELLOs")
+        s.draw()
+
+    # print(message_text)
+    # # Display winner on the screen for a short duration before closing
+    # screen.fill(black)
+    # message(message_text, message_color, width // 3, height // 2)
+    # pygame.display.update()
+    # pygame.time.delay(2000)  # Display for 2 seconds
     
-    pygame.quit()
-    quit()
+    # pygame.quit()
+    # quit()
 
 # Run the game
 if __name__ == "__main__":
@@ -278,6 +305,5 @@ if __name__ == "__main__":
     # 2 - 30 seconds
     # 3 - 2.5 minutes
     # 4 - 3 minutes
-    desired_time_option = 1
-
-    game_loop(time_option=desired_time_option)
+    s.main_menu()
+#A1204
