@@ -92,13 +92,13 @@ class Snake:
         self.__body_segments[0] = self.get_head_position()
 
     def set_direction(self, direction):
-        if direction == 'UP' and self.__direction != 'DOWN':
+        if direction == 'UP' and self.__direction != 'DOWN'  and not (self.__head_position[1] > self.__body_segments[1][1] and abs(self.__head_position[0] - self.__body_segments[1][0]) < Snake.__block_size/2):
             self.__direction = 'UP'
-        elif direction == 'DOWN' and self.__direction != 'UP':
+        elif direction == 'DOWN' and self.__direction != 'UP' and not (self.__head_position[1] < self.__body_segments[1][1] and abs(self.__head_position[0] - self.__body_segments[1][0]) < Snake.__block_size/2):
             self.__direction = 'DOWN'
-        elif direction == 'LEFT' and self.__direction != 'RIGHT':
+        elif direction == 'LEFT' and self.__direction != 'RIGHT' and not (self.__head_position[0] > self.__body_segments[1][0] and abs(self.__head_position[1] - self.__body_segments[1][1]) < Snake.__block_size/2):
             self.__direction = 'LEFT'
-        elif direction == 'RIGHT' and self.__direction != 'LEFT':
+        elif direction == 'RIGHT' and self.__direction != 'LEFT'and not (self.__head_position[0] < self.__body_segments[1][0] and abs(self.__head_position[1] - self.__body_segments[1][1]) < Snake.__block_size/2):
             self.__direction = 'RIGHT'
 
     def set_color(self, color: Tuple):
