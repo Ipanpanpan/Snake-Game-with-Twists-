@@ -5,6 +5,7 @@ from snake import Snake
 from powerup_debuff import PowerUpOrDebuff  # Import the PowerUpOrDebuff class
 from game import Game
 from map import Map, Room, Pixel
+
 # Initialize pygame
 pygame.init()
 
@@ -54,7 +55,10 @@ def draw_game_state(game: Game):
     
     # Draw the map
     game_map = game.get_map()
-    screen.fill(black)
+    background_image = pygame.image.load("Assets\game_bg(2).png").convert_alpha() # Load your image
+    screen.blit(background_image, (0, 0))
+    #screen.fill((0,0,0))
+
     # Draw rooms
     wall_color = (77, 65, 41)
     door_color = (161, 103, 80)
@@ -110,6 +114,7 @@ def draw_game_state(game: Game):
                     print(f"{snake.get_name()} invincibility duration ended.")
                     snake.remove_invincibility()
                     snake_color = snake.get_color()  # Revert to original color
+                continue
         elif snake.is_slowed_down():
             snake_color = gray  # Indicate slow down
         else:
@@ -214,14 +219,14 @@ def game_loop():
         screen.fill(black)
         message(f"{winner} wins the game!", green, width // 3, height // 2)
         pygame.display.update()
-        pygame.time.delay(3000)  # Display for 3 seconds
+        pygame.time.delay(3)  # Display for 3 seconds
     else:
         print("No winners. All snakes are dead.")
         # Optionally, display a tie message
         screen.fill(black)
         message("No winners. All snakes are dead.", red, width // 3, height // 2)
         pygame.display.update()
-        pygame.time.delay(3000)  # Display for 3 seconds
+        pygame.time.delay(3)  # Display for 3 seconds
     
     pygame.quit()
     quit()
@@ -229,3 +234,4 @@ def game_loop():
 # Run the game
 if __name__ == "__main__":
     game_loop()
+
