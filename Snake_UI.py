@@ -17,6 +17,9 @@ def get_font(size): # Returns Press-Start-2P in the desired size
 menu_music = "Assets\\Bouncy.mp3"  
 game_music = "Assets\\Tetris.mp3" 
 time_music = "Assets\\Mario.mp3"
+win_music = "Assets\\win.mp3"
+draw_music = "Assets\\draw.mp3"
+gamemode_music = "Assets\\loading.mp3"
 
 # Game states
 MENU = "menu"
@@ -195,6 +198,7 @@ def tutorial5():
         pygame.display.update()
 
 def gamemode():
+        play_music(gamemode_music)
         while True:
             TUTOR_MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\gamemode_select.png"), (0, 0))
@@ -224,7 +228,7 @@ def gamemode():
             pygame.display.update()
 
 def p1_wins():
-        play_music(menu_music)
+        play_music(win_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\p1_wins.png"), (0, 0))
@@ -247,7 +251,7 @@ def p1_wins():
             pygame.display.update()
 
 def p2_wins():
-        play_music(menu_music)
+        play_music(win_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\p2_wins.png"), (0, 0))
@@ -270,7 +274,7 @@ def p2_wins():
             pygame.display.update()
 
 def draw():
-        play_music(menu_music)
+        play_music(draw_music)
         while True:
             MOUSE_POS = pygame.mouse.get_pos()
             SCREEN.blit(pygame.image.load("Assets\\draw.png"), (0, 0))
